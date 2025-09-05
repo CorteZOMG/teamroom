@@ -1,5 +1,7 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL;
 
+import { getToken } from '../services/auth';
+
 // Types for authentication
 export interface LoginRequest {
   username: string;
@@ -11,7 +13,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
 }
-
+                                 
 export interface LoginResponse {
   jwt: string;
   username: string;
@@ -22,16 +24,25 @@ export interface RegisterResponse {
   username: string;
 }
 
+export interface MeResponse {
+  id: string;
+  username: string;
+  email?: string;
+}
+
 export async function apiFetch<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const token = getToken();
+
   const res = await fetch(`${API_BASE_URL}${endpoint}`, {
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
-    credentials: "include", 
+    // No cookies needed with Bearer token
     ...options,
   });
 
@@ -55,4 +66,11 @@ export async function register(userData: RegisterRequest): Promise<RegisterRespo
     method: 'POST',
     body: JSON.stringify(userData),
   });
+}
+
+// Session helpers (best-effort; backend does not provide /me)
+export async function logout(): Promise<void> {
+  // If backend had a logout, call it; otherwise just clear token client-side.
+  // Here we only clear token; you can extend if backend adds endpoint later.
+  return Promise.resolve();
 }

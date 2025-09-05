@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, type LoginRequest } from '../api/client';
+import { setToken } from '../services/auth';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ export default function Login() {
 
     try {
       const response = await login(formData);
+      setToken(response.jwt);
       setSuccess(`Login successful! Welcome, ${response.username}!`);
       console.log('Login response:', response);
     } catch (err) {
