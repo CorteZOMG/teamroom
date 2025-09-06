@@ -30,27 +30,50 @@ export interface MeResponse {
   email?: string;
 }
 
+const DEFAULT_TIMEOUT_MS = 10000;
+
 export async function apiFetch<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: (RequestInit & { timeoutMs?: number }) = {}
 ): Promise<T> {
   const token = getToken();
+  const { timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
 
-  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-    // No cookies needed with Bearer token
-    ...options,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  if (!res.ok) {
-    throw new Error(`API error: ${res.status} ${res.statusText}`);
+  try {
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...fetchOptions.headers,
+      },
+      signal: controller.signal,
+      // No cookies needed with Bearer token
+      ...fetchOptions,
+    });
+
+    if (!res.ok) {
+      let errorText = '';
+      try {
+        errorText = await res.text();
+      } catch {}
+      throw new Error(`API error: ${res.status} ${res.statusText}${errorText ? ` - ${errorText}` : ''}`);
+    }
+
+    return res.json() as Promise<T>;
+  } catch (err) {
+    if ((err as any)?.name === 'AbortError') {
+      throw new Error('Request timed out. Please check your internet connection and try again.');
+    }
+    if (typeof navigator !== 'undefined' && navigator && !navigator.onLine) {
+      throw new Error('You appear to be offline. Please reconnect and try again.');
+    }
+    throw new Error((err as Error)?.message || 'Network error');
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return res.json() as Promise<T>;
 }
 
 // Authentication functions

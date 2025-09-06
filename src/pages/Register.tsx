@@ -37,10 +37,10 @@ export default function Register() {
     }
   };
 
-  return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100">
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md w-80">
-        <h2 className="text-2xl font-bold mb-4">Register</h2>
+          <h2 className="text-2xl font-bold mb-4">Register</h2>
         
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -54,33 +54,33 @@ export default function Register() {
           </div>
         )}
 
-        <input
-          type="text"
+          <input
+            type="text"
           name="username"
           placeholder="Username"
           value={formData.username}
           onChange={handleChange}
           required
-          className="border w-full p-2 mb-3 rounded"
-        />
-        <input
-          type="email"
+            className="border w-full p-2 mb-3 rounded"
+          />
+          <input
+            type="email"
           name="email"
-          placeholder="Email"
+            placeholder="Email"
           value={formData.email}
           onChange={handleChange}
           required
-          className="border w-full p-2 mb-3 rounded"
-        />
-        <input
-          type="password"
+            className="border w-full p-2 mb-3 rounded"
+          />
+          <input
+            type="password"
           name="password"
-          placeholder="Password"
+            placeholder="Password"
           value={formData.password}
           onChange={handleChange}
           required
-          className="border w-full p-2 mb-3 rounded"
-        />
+            className="border w-full p-2 mb-3 rounded"
+          />
         <button 
           type="submit"
           disabled={loading}
@@ -98,8 +98,8 @@ export default function Register() {
             I already have an account
           </button>
         </div>
-      </form>
-    </div>
-  );
-}
+        </form>
+      </div>
+    );
+  }
   

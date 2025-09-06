@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { getMe, login as apiLogin, register as apiRegister, logout as apiLogout, type LoginRequest, type RegisterRequest, type MeResponse } from '../api/client';
+import { login as apiLogin, register as apiRegister, type LoginRequest, type RegisterRequest } from '../api/client';
+import { getToken, clearToken } from '../services/auth';
 
 interface AuthContextValue {
-  user: MeResponse | null;
+  isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
@@ -14,17 +15,15 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<MeResponse | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = async () => {
     try {
       setError(null);
-      const me = await getMe();
-      setUser(me);
-    } catch {
-      setUser(null);
+      const token = getToken();
+      setIsAuthenticated(!!token);
     } finally {
       setLoading(false);
     }
@@ -48,11 +47,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     setError(null);
-    await apiLogout();
-    setUser(null);
+    clearToken();
+    setIsAuthenticated(false);
   };
 
-  const value = useMemo<AuthContextValue>(() => ({ user, loading, error, refresh, login, register, logout }), [user, loading, error]);
+  const value = useMemo<AuthContextValue>(() => ({ isAuthenticated, loading, error, refresh, login, register, logout }), [isAuthenticated, loading, error]);
 
   return (
     <AuthContext.Provider value={value}>
