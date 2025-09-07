@@ -119,29 +119,17 @@ export async function register(userData: RegisterRequest): Promise<RegisterRespo
 }
 
 export async function createProfile(profileData: ProfileCreationRequest): Promise<ProfileCreationResponse> {
-  const formData = new FormData();
-  formData.append('firstName', profileData.firstName);
-  
-  if (profileData.lastName) {
-    formData.append('lastName', profileData.lastName);
-  }
-  
-  if (profileData.biography) {
-    formData.append('biography', profileData.biography);
-  }
-  
-  // Send empty string for photoUrl to match API documentation
-  formData.append('photoUrl', '');
-  
-  // Don't send profilePicture file for now to isolate the issue
-  // if (profileData.profilePicture) {
-  //   formData.append('profilePicture', profileData.profilePicture);
-  // }
+  // Try sending as JSON first to see if that resolves the 500 error
+  const jsonData = {
+    firstName: profileData.firstName,
+    lastName: profileData.lastName || '',
+    biography: profileData.biography || '',
+    photoUrl: ''
+  };
 
   return apiFetch<ProfileCreationResponse>('/api/profile', {
     method: 'POST',
-    body: formData,
-    // Don't override headers - let apiFetch handle Authorization and Content-Type
+    body: JSON.stringify(jsonData),
   });
 }
 
