@@ -80,7 +80,7 @@ export default function Login() {
             value={formData.username}
             onChange={handleChange}
             required
-            className="w-full h-full bg-transparent border-none outline-none px-6 py-2 text-primary text-4xl font-normal font-instrument placeholder-gray-500 focus:placeholder-gray-300 transition-colors duration-200"
+            className="w-full h-full bg-transparent border-none outline-none px-6 py-2 text-primary text-4xl font-normal font-instrument placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
           />
         </div>
         
@@ -93,7 +93,7 @@ export default function Login() {
             value={formData.password}
             onChange={handleChange}
             required
-            className="w-full h-full bg-transparent border-none outline-none px-6 py-2 text-primary text-4xl font-normal font-instrument placeholder-gray-500 focus:placeholder-gray-300 transition-colors duration-200"
+            className="w-full h-full bg-transparent border-none outline-none px-6 py-2 text-primary text-4xl font-normal font-instrument placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
           />
         </div>
         
