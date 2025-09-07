@@ -130,9 +130,13 @@ export async function createProfile(profileData: ProfileCreationRequest): Promis
     formData.append('biography', profileData.biography);
   }
   
-  if (profileData.profilePicture) {
-    formData.append('profilePicture', profileData.profilePicture);
-  }
+  // Send empty string for photoUrl to match API documentation
+  formData.append('photoUrl', '');
+  
+  // Don't send profilePicture file for now to isolate the issue
+  // if (profileData.profilePicture) {
+  //   formData.append('profilePicture', profileData.profilePicture);
+  // }
 
   return apiFetch<ProfileCreationResponse>('/api/profile', {
     method: 'POST',
