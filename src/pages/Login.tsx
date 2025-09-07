@@ -44,13 +44,13 @@ export default function Login() {
       
       // More specific error handling
       if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
-        setError('Invalid username or password. Please try again.');
+        setError('Некоректне логін або пароль.');
       } else if (errorMessage.includes('timeout')) {
-        setError('Connection timeout. Please check your internet and try again.');
+        setError('Час очікування з\'єднання. Перевірте ваше інтернет і спробуйте знову.');
       } else if (errorMessage.includes('offline')) {
-        setError('You appear to be offline. Please check your connection.');
+        setError('Ви не з\'єднані з інтернетом. Перевірте ваше з\'єднання.');
       } else if (errorMessage.includes('500')) {
-        setError('Server error. Please try again later.');
+        setError('Помилка сервера. Спробуйте знову пізніше.');
       } else {
         setError(errorMessage);
       }
@@ -65,7 +65,7 @@ export default function Login() {
       <div className="w-[60%] h-full absolute right-0 bg-primary" />
       
       {/* Main heading */}
-      <div className="w-96 h-56 left-[157px] top-[379px] absolute justify-start text-primary text-6xl font-normal font-instrument">
+      <div className="w-96 h-56 left-[10%] top-1/2 -translate-y-1/2 absolute text-primary text-6xl font-normal font-instrument">
         Let's complete an auth
       </div>
       
@@ -118,37 +118,20 @@ export default function Login() {
           Немає акаунту? Зареєструйтесь
         </div>
         
-        {/* Additional text under register link */}
-        <div className="text-center text-white/70 text-lg font-normal font-instrument">
-          Створіть новий акаунт для доступу до всіх функцій
-        </div>
+        {/* Error/Success message - inline text */}
+        {error && (
+          <div className="text-center text-red-300 text-lg font-normal font-instrument">
+            {error}
+          </div>
+        )}
+        
+        {success && (
+          <div className="text-center text-green-300 text-lg font-normal font-instrument">
+            {success}
+          </div>
+        )}
+        
       </form>
-      
-      {/* Error message - positioned above form */}
-      {error && (
-        <div className="absolute right-[30%] top-[35%] transform translate-x-1/2 w-[511px] bg-red-50 border-2 border-red-200 text-red-800 px-6 py-4 rounded-[10px] text-center animate-pulse shadow-lg">
-          <div className="flex items-center justify-center mb-2">
-            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-            <span className="font-semibold">Помилка входу</span>
-          </div>
-          <p className="text-sm">{error}</p>
-        </div>
-      )}
-      
-      {/* Success message - positioned above form */}
-      {success && (
-        <div className="absolute right-[30%] top-[35%] transform translate-x-1/2 w-[511px] bg-green-50 border-2 border-green-200 text-green-800 px-6 py-4 rounded-[10px] text-center animate-pulse shadow-lg">
-          <div className="flex items-center justify-center mb-2">
-            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <span className="font-semibold">Успішний вхід</span>
-          </div>
-          <p className="text-sm">{success}</p>
-        </div>
-      )}
     </div>
   );
 }
