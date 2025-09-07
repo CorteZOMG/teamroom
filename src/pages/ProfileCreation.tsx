@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createProfile } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 interface ProfileData {
   firstName: string;
@@ -11,6 +12,7 @@ interface ProfileData {
 
 export default function ProfileCreation() {
   const navigate = useNavigate();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState<ProfileData>({
     firstName: '',
     lastName: '',
@@ -20,6 +22,27 @@ export default function ProfileCreation() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="w-screen h-screen flex items-center justify-center bg-white">
+        <div className="text-primary text-2xl font-instrument">Завантаження...</div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   // Validation functions
   const validateField = (name: string, value: string): string | null => {

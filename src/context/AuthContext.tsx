@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { login as apiLogin, register as apiRegister, type LoginRequest, type RegisterRequest } from '../api/client';
-import { getToken, clearToken } from '../services/auth';
+import { getToken, setToken, clearToken } from '../services/auth';
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -35,14 +35,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (data: LoginRequest) => {
     setError(null);
-    await apiLogin(data);
-    await refresh();
+    try {
+      const response = await apiLogin(data);
+      setToken(response.jwt);
+      setIsAuthenticated(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+      throw err;
+    }
   };
 
   const register = async (data: RegisterRequest) => {
     setError(null);
-    await apiRegister(data);
-    await refresh();
+    try {
+      const response = await apiRegister(data);
+      // Note: Registration might not return a JWT token
+      // If it does, we should store it here
+      // For now, we'll assume user needs to login after registration
+      console.log('Registration successful:', response);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
+      throw err;
+    }
   };
 
   const logout = async () => {

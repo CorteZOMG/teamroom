@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, type LoginRequest } from '../api/client';
-import { setToken } from '../services/auth';
+import { useAuth } from '../context/AuthContext';
+import { type LoginRequest } from '../api/client';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
   const [formData, setFormData] = useState<LoginRequest>({
     username: '',
     password: ''
@@ -29,10 +30,9 @@ export default function Login() {
     setSuccess(null);
 
     try {
-      const response = await login(formData);
-      setToken(response.jwt);
-      setSuccess(`Login successful! Welcome, ${response.username}!`);
-      console.log('Login response:', response);
+      await authLogin(formData);
+      setSuccess('Login successful! Welcome!');
+      console.log('Login successful');
       
       // Redirect to profile creation after successful login
       setTimeout(() => {

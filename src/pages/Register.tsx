@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { register, type RegisterRequest } from '../api/client'; // Your actual API client
+import { useAuth } from '../context/AuthContext';
+import { type RegisterRequest } from '../api/client';
 
 export default function Register() {
-  const navigate = useNavigate(); // Now using the real useNavigate
+  const navigate = useNavigate();
+  const { register: authRegister } = useAuth();
   const [formData, setFormData] = useState<RegisterRequest>({
     username: '',
     email: '',
@@ -30,13 +32,14 @@ export default function Register() {
     setSuccess(null);
 
     try {
-      const response = await register(formData);
-      setSuccess(`Registration successful! Welcome, ${response.username}!`);
-      console.log('Register response:', response);
+      await authRegister(formData);
+      setSuccess('Registration successful! Please login to continue.');
+      console.log('Registration successful');
 
-       // Redirect to profile creation after successful registration
+       // Redirect to login page after successful registration
+       // User needs to login to get authentication token
        setTimeout(() => {
-        navigate('/profile/create'); // Redirect to profile creation page
+        navigate('/'); // Redirect to login page
        }, 2000);
 
     } catch (err) {
