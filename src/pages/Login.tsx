@@ -34,10 +34,9 @@ export default function Login() {
       setSuccess(`Login successful! Welcome, ${response.username}!`);
       console.log('Login response:', response);
       
-      // Auto redirect after successful login (optional)
+      // Redirect to profile creation after successful login
       setTimeout(() => {
-        // You can add navigation to dashboard here
-        // navigate('/dashboard');
+        navigate('/profile/create');
       }, 2000);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed';
@@ -116,6 +115,14 @@ export default function Login() {
           onClick={() => navigate('/register')}
         >
           Немає акаунту? Зареєструйтесь
+        </div>
+        
+        {/* Profile creation link */}
+        <div 
+          className="text-center text-white text-xl font-normal font-instrument cursor-pointer hover:text-gray-200 transition-colors duration-200 mb-2"
+          onClick={() => navigate('/profile/create')}
+        >
+          Створити/Оновити профіль
         </div>
         
         {/* Error/Success message - inline text */}

@@ -34,9 +34,9 @@ export default function Register() {
       setSuccess(`Registration successful! Welcome, ${response.username}!`);
       console.log('Register response:', response);
 
-       // Optional: Redirect after a short delay
+       // Redirect to profile creation after successful registration
        setTimeout(() => {
-        navigate('/'); // Redirect to login page
+        navigate('/profile/create'); // Redirect to profile creation page
        }, 2000);
 
     } catch (err) {

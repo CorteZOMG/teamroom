@@ -24,6 +24,24 @@ export interface RegisterResponse {
   username: string;
 }
 
+export interface ProfileCreationRequest {
+  firstName: string;
+  lastName?: string;
+  biography?: string;
+  profilePicture?: File;
+}
+
+export interface ProfileCreationResponse {
+  message: string;
+}
+
+export interface ProfileResponse {
+  firstName: string;
+  lastName: string;
+  biography: string;
+  photoUrl: string;
+}
+
 export interface MeResponse {
   id: string;
   username: string;
@@ -88,6 +106,99 @@ export async function register(userData: RegisterRequest): Promise<RegisterRespo
   return apiFetch<RegisterResponse>('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify(userData),
+  });
+}
+
+export async function createProfile(profileData: ProfileCreationRequest): Promise<ProfileCreationResponse> {
+  const formData = new FormData();
+  formData.append('firstName', profileData.firstName);
+  
+  if (profileData.lastName) {
+    formData.append('lastName', profileData.lastName);
+  }
+  
+  if (profileData.biography) {
+    formData.append('biography', profileData.biography);
+  }
+  
+  if (profileData.profilePicture) {
+    formData.append('profilePicture', profileData.profilePicture);
+  }
+
+  return apiFetch<ProfileCreationResponse>('/api/profile', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      // Don't set Content-Type for FormData, let browser set it with boundary
+    },
+  });
+}
+
+export async function getProfile(): Promise<ProfileResponse> {
+  return apiFetch<ProfileResponse>('/api/profile', {
+    method: 'GET',
+  });
+}
+
+export async function getProfileByUsername(username: string): Promise<ProfileResponse> {
+  return apiFetch<ProfileResponse>(`/api/profile/${username}`, {
+    method: 'GET',
+  });
+}
+
+export async function updateProfile(profileData: Partial<ProfileCreationRequest>): Promise<ProfileCreationResponse> {
+  const formData = new FormData();
+  
+  if (profileData.firstName) {
+    formData.append('firstName', profileData.firstName);
+  }
+  
+  if (profileData.lastName) {
+    formData.append('lastName', profileData.lastName);
+  }
+  
+  if (profileData.biography) {
+    formData.append('biography', profileData.biography);
+  }
+  
+  if (profileData.profilePicture) {
+    formData.append('profilePicture', profileData.profilePicture);
+  }
+
+  return apiFetch<ProfileCreationResponse>('/api/profile', {
+    method: 'PUT',
+    body: formData,
+    headers: {
+      // Don't set Content-Type for FormData, let browser set it with boundary
+    },
+  });
+}
+
+export async function patchProfile(profileData: Partial<ProfileCreationRequest>): Promise<ProfileCreationResponse> {
+  const formData = new FormData();
+  
+  if (profileData.firstName) {
+    formData.append('firstName', profileData.firstName);
+  }
+  
+  if (profileData.lastName) {
+    formData.append('lastName', profileData.lastName);
+  }
+  
+  if (profileData.biography) {
+    formData.append('biography', profileData.biography);
+  }
+  
+  if (profileData.profilePicture) {
+    formData.append('profilePicture', profileData.profilePicture);
+  }
+
+  return apiFetch<ProfileCreationResponse>('/api/profile', {
+    method: 'PATCH',
+    body: formData,
+    headers: {
+      // Don't set Content-Type for FormData, let browser set it with boundary
+    },
   });
 }
 
