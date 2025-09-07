@@ -56,6 +56,14 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const token = getToken();
   const { timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
+  
+  // Debug logging
+  console.log('API Request:', {
+    endpoint,
+    hasToken: !!token,
+    tokenPreview: token ? `${token.substring(0, 20)}...` : 'none',
+    method: fetchOptions.method || 'GET'
+  });
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -63,7 +71,8 @@ export async function apiFetch<T>(
   try {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
-        "Content-Type": "application/json",
+        // Only set Content-Type for JSON, let browser handle FormData
+        ...(fetchOptions.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...fetchOptions.headers,
       },
@@ -128,9 +137,7 @@ export async function createProfile(profileData: ProfileCreationRequest): Promis
   return apiFetch<ProfileCreationResponse>('/api/profile', {
     method: 'POST',
     body: formData,
-    headers: {
-      // Don't set Content-Type for FormData, let browser set it with boundary
-    },
+    // Don't override headers - let apiFetch handle Authorization and Content-Type
   });
 }
 
@@ -168,9 +175,6 @@ export async function updateProfile(profileData: Partial<ProfileCreationRequest>
   return apiFetch<ProfileCreationResponse>('/api/profile', {
     method: 'PUT',
     body: formData,
-    headers: {
-      // Don't set Content-Type for FormData, let browser set it with boundary
-    },
   });
 }
 
@@ -196,9 +200,6 @@ export async function patchProfile(profileData: Partial<ProfileCreationRequest>)
   return apiFetch<ProfileCreationResponse>('/api/profile', {
     method: 'PATCH',
     body: formData,
-    headers: {
-      // Don't set Content-Type for FormData, let browser set it with boundary
-    },
   });
 }
 
