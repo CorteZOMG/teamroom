@@ -28,11 +28,19 @@ export interface ProfileCreationRequest {
   firstName: string;
   lastName?: string;
   biography?: string;
-  profilePicture?: File;
+  photoUrl?: string;
 }
 
 export interface ProfileCreationResponse {
   message: string;
+}
+
+export interface UploadLinkResponse {
+  link: string;
+}
+
+export interface PublicLinkResponse {
+  link: string;
 }
 
 export interface ProfileResponse {
@@ -42,11 +50,6 @@ export interface ProfileResponse {
   photoUrl: string;
 }
 
-export interface MeResponse {
-  id: string;
-  username: string;
-  email?: string;
-}
 
 const DEFAULT_TIMEOUT_MS = 10000;
 
@@ -118,13 +121,57 @@ export async function register(userData: RegisterRequest): Promise<RegisterRespo
   });
 }
 
+// File upload functions
+export async function getUploadLink(purpose: string): Promise<UploadLinkResponse> {
+  console.log('Getting upload link for purpose:', purpose);
+  
+  return apiFetch<UploadLinkResponse>(`/api/cloud-storage/get-upload-link?purpose=${encodeURIComponent(purpose)}`, {
+    method: 'GET',
+  });
+}
+
+export async function uploadFile(uploadUrl: string, file: File): Promise<{ fileid: number }> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  console.log('Uploading file to:', uploadUrl);
+
+  const response = await fetch(uploadUrl, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`File upload failed: ${response.status} ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  console.log('Upload response:', result);
+  
+  // Extract fileid from the response
+  const fileid = result.fileid || (result.fileids && result.fileids[0]);
+  if (!fileid) {
+    throw new Error('No fileid found in upload response');
+  }
+  
+  return { fileid };
+}
+
+export async function getPublicLink(fileid: number): Promise<PublicLinkResponse> {
+  console.log('Getting public link for fileid:', fileid);
+  
+  return apiFetch<PublicLinkResponse>(`/api/cloud-storage/get-public-link?fileid=${fileid}`, {
+    method: 'GET',
+  });
+}
+
 export async function createProfile(profileData: ProfileCreationRequest): Promise<ProfileCreationResponse> {
-  // Try sending as JSON first to see if that resolves the 500 error
+  // Always use JSON format as per API documentation
   const jsonData = {
     firstName: profileData.firstName,
     lastName: profileData.lastName || '',
     biography: profileData.biography || '',
-    photoUrl: ''
+    photoUrl: profileData.photoUrl || ''
   };
 
   return apiFetch<ProfileCreationResponse>('/api/profile', {
@@ -132,6 +179,8 @@ export async function createProfile(profileData: ProfileCreationRequest): Promis
     body: JSON.stringify(jsonData),
   });
 }
+
+// Note: Using GET /api/profile to get current user info instead of /api/me
 
 export async function getProfile(): Promise<ProfileResponse> {
   return apiFetch<ProfileResponse>('/api/profile', {
@@ -146,52 +195,41 @@ export async function getProfileByUsername(username: string): Promise<ProfileRes
 }
 
 export async function updateProfile(profileData: Partial<ProfileCreationRequest>): Promise<ProfileCreationResponse> {
-  const formData = new FormData();
-  
-  if (profileData.firstName) {
-    formData.append('firstName', profileData.firstName);
-  }
-  
-  if (profileData.lastName) {
-    formData.append('lastName', profileData.lastName);
-  }
-  
-  if (profileData.biography) {
-    formData.append('biography', profileData.biography);
-  }
-  
-  if (profileData.profilePicture) {
-    formData.append('profilePicture', profileData.profilePicture);
-  }
+  const jsonData = {
+    firstName: profileData.firstName || '',
+    lastName: profileData.lastName || '',
+    biography: profileData.biography || '',
+    photoUrl: profileData.photoUrl || ''
+  };
 
   return apiFetch<ProfileCreationResponse>('/api/profile', {
     method: 'PUT',
-    body: formData,
+    body: JSON.stringify(jsonData),
   });
 }
 
 export async function patchProfile(profileData: Partial<ProfileCreationRequest>): Promise<ProfileCreationResponse> {
-  const formData = new FormData();
+  const jsonData: any = {};
   
-  if (profileData.firstName) {
-    formData.append('firstName', profileData.firstName);
+  if (profileData.firstName !== undefined) {
+    jsonData.firstName = profileData.firstName;
   }
   
-  if (profileData.lastName) {
-    formData.append('lastName', profileData.lastName);
+  if (profileData.lastName !== undefined) {
+    jsonData.lastName = profileData.lastName;
   }
   
-  if (profileData.biography) {
-    formData.append('biography', profileData.biography);
+  if (profileData.biography !== undefined) {
+    jsonData.biography = profileData.biography;
   }
   
-  if (profileData.profilePicture) {
-    formData.append('profilePicture', profileData.profilePicture);
+  if (profileData.photoUrl !== undefined) {
+    jsonData.photoUrl = profileData.photoUrl;
   }
 
   return apiFetch<ProfileCreationResponse>('/api/profile', {
     method: 'PATCH',
-    body: formData,
+    body: JSON.stringify(jsonData),
   });
 }
 

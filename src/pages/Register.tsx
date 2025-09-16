@@ -61,12 +61,12 @@ export default function Register() {
   };
 
   return (
-    <div className="w-screen h-screen relative bg-white overflow-hidden font-instrument">
+    <div className="w-screen h-screen relative bg-white overflow-hidden font-montserrat">
       {/* Right side - Colored background */}
       <div className="w-[60%] h-full absolute right-0 bg-primary" />
       
       {/* Main heading on the left */}
-      <div className="w-96 h-56 left-[10%] top-1/2 -translate-y-1/2 absolute text-primary text-6xl font-normal font-instrument">
+      <div className="w-96 h-56 left-[10%] top-1/2 -translate-y-1/2 absolute text-primary text-6xl font-normal font-montserrat">
         Let's complete a registration
       </div>
       
@@ -82,7 +82,7 @@ export default function Register() {
             value={formData.username}
             onChange={handleChange}
             required
-            className="w-full h-full bg-transparent border-none outline-none px-6 text-slate-700 text-4xl font-normal font-instrument placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
+            className="w-full h-full bg-transparent border-none outline-none px-6 text-slate-700 text-4xl font-normal font-montserrat placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
           />
         </div>
 

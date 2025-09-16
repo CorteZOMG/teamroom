@@ -8,7 +8,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'instrument': ['Instrument Sans', 'sans-serif'],
+        'montserrat': ['Montserrat', 'Arial', 'Helvetica', 'sans-serif'],
       },
       colors: {
         primary: '#62567E',

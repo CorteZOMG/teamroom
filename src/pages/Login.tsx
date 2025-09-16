@@ -64,7 +64,7 @@ export default function Login() {
       <div className="w-[60%] h-full absolute right-0 bg-primary" />
       
       {/* Main heading */}
-      <div className="w-96 h-56 left-[10%] top-1/2 -translate-y-1/2 absolute text-primary text-6xl font-normal font-instrument">
+      <div className="w-96 h-56 left-[10%] top-1/2 -translate-y-1/2 absolute text-primary text-6xl font-normal font-montserrat">
         Let's complete an auth
       </div>
       
@@ -79,7 +79,7 @@ export default function Login() {
             value={formData.username}
             onChange={handleChange}
             required
-            className="w-full h-full bg-transparent border-none outline-none px-6 py-2 text-primary text-4xl font-normal font-instrument placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
+            className="w-full h-full bg-transparent border-none outline-none px-6 py-2 text-primary text-4xl font-normal font-montserrat placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
           />
         </div>
         
@@ -92,7 +92,7 @@ export default function Login() {
             value={formData.password}
             onChange={handleChange}
             required
-            className="w-full h-full bg-transparent border-none outline-none px-6 py-2 text-primary text-4xl font-normal font-instrument placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
+            className="w-full h-full bg-transparent border-none outline-none px-6 py-2 text-primary text-4xl font-normal font-montserrat placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
           />
         </div>
         
@@ -103,7 +103,7 @@ export default function Login() {
             disabled={loading}
             className="w-full h-full bg-transparent border-none outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:bg-accent/80 transition-colors duration-150 flex items-center justify-center"
           >
-            <span className="text-white text-4xl font-normal font-instrument">
+            <span className="text-white text-4xl font-normal font-montserrat">
               {loading ? 'Завантаження...' : 'Авторизуватись'}
             </span>
           </button>
@@ -111,7 +111,7 @@ export default function Login() {
         
         {/* Register link - with same spacing as input fields */}
         <div 
-          className="text-center text-white text-2xl font-normal font-instrument cursor-pointer hover:text-gray-200 transition-colors duration-200 mb-2"
+          className="text-center text-white text-2xl font-normal font-montserrat cursor-pointer hover:text-gray-200 transition-colors duration-200 mb-2"
           onClick={() => navigate('/register')}
         >
           Немає акаунту? Зареєструйтесь
@@ -119,7 +119,7 @@ export default function Login() {
         
         {/* Profile creation link */}
         <div 
-          className="text-center text-white text-xl font-normal font-instrument cursor-pointer hover:text-gray-200 transition-colors duration-200 mb-2"
+          className="text-center text-white text-xl font-normal font-montserrat cursor-pointer hover:text-gray-200 transition-colors duration-200 mb-2"
           onClick={() => navigate('/profile/create')}
         >
           Створити/Оновити профіль
@@ -127,13 +127,13 @@ export default function Login() {
         
         {/* Error/Success message - inline text */}
         {error && (
-          <div className="text-center text-red-300 text-lg font-normal font-instrument">
+          <div className="text-center text-red-300 text-lg font-normal font-montserrat">
             {error}
           </div>
         )}
         
         {success && (
-          <div className="text-center text-green-300 text-lg font-normal font-instrument">
+          <div className="text-center text-green-300 text-lg font-normal font-montserrat">
             {success}
           </div>
         )}
