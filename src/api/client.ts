@@ -1,54 +1,17 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 import { getToken } from '../services/auth';
-
-// Types for authentication
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  username: string;
-  email: string;
-  password: string;
-}
-                                 
-export interface LoginResponse {
-  jwt: string;
-  username: string;
-}
-
-export interface RegisterResponse {
-  message: string;
-  username: string;
-}
-
-export interface ProfileCreationRequest {
-  firstName: string;
-  lastName?: string;
-  biography?: string;
-  photoUrl?: string;
-}
-
-export interface ProfileCreationResponse {
-  message: string;
-}
-
-export interface UploadLinkResponse {
-  link: string;
-}
-
-export interface PublicLinkResponse {
-  link: string;
-}
-
-export interface ProfileResponse {
-  firstName: string;
-  lastName: string;
-  biography: string;
-  photoUrl: string;
-}
+import type { 
+  LoginRequest, 
+  RegisterRequest, 
+  LoginResponse, 
+  RegisterResponse,
+  ProfileCreationRequest,
+  ProfileCreationResponse,
+  ProfileResponse,
+  UploadLinkResponse,
+  PublicLinkResponse
+} from '../types';
 
 
 const DEFAULT_TIMEOUT_MS = 10000;

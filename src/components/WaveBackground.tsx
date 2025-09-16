@@ -1,9 +1,4 @@
-import React from 'react';
-
-interface WaveBackgroundProps {
-  children: React.ReactNode;
-  className?: string;
-}
+import type { WaveBackgroundProps } from '../types/components';
 
 export default function WaveBackground({ children, className = "" }: WaveBackgroundProps) {
   return (

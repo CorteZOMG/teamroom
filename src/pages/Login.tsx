@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { type LoginRequest } from '../api/client';
+import type { LoginRequest } from '../types';
 
 export default function Login() {
   const navigate = useNavigate();

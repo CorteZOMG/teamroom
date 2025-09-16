@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { login as apiLogin, register as apiRegister, type LoginRequest, type RegisterRequest } from '../api/client';
+import { login as apiLogin, register as apiRegister } from '../api/client';
+import type { LoginRequest, RegisterRequest } from '../types';
 import { getToken, setToken, clearToken } from '../services/auth';
 
 interface AuthContextValue {

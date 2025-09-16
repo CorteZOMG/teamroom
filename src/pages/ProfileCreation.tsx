@@ -3,17 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { createProfile, getUploadLink, uploadFile, getPublicLink, updateProfile } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import WaveBackground from '../components/WaveBackground';
-
-interface ProfileData {
-  firstName: string;
-  lastName: string;
-  biography: string;
-}
-
-interface SelectedFile {
-  file: File;
-  preview: string;
-}
+import type { ProfileData, SelectedFile } from '../types';
 
 export default function ProfileCreation() {
   const navigate = useNavigate();

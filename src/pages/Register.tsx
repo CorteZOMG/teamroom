@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { type RegisterRequest } from '../api/client';
+import type { RegisterRequest } from '../types';
 
 export default function Register() {
   const navigate = useNavigate();
