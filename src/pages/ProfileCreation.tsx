@@ -166,7 +166,7 @@ export default function ProfileCreation() {
         onClick={handleCancel}
         className="fixed top-4 left-4 w-14 h-14 flex items-center justify-center cursor-pointer bg-white/20 hover:bg-white/30 rounded-full transition-colors duration-200 z-[9999] backdrop-blur-sm shadow-lg border border-white/30"
       >
-        <img src="/src/assets/arrow.svg" alt="Back" className="w-6 h-6" />
+        <img src="/assets/arrow.svg" alt="Back" className="w-6 h-6" />
       </button>
       
       {/* Form container - centered on the colored part */}
@@ -197,7 +197,7 @@ export default function ProfileCreation() {
                 onChange={handleImageUpload}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
-              <img src="/src/assets/pen.svg" alt="Edit" className="w-4 h-4" />
+              <img src="/assets/pen.svg" alt="Edit" className="w-4 h-4" />
             </div>
           </div>
         </div>
