@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { login as apiLogin, register as apiRegister } from '../api/client';
+import { login as apiLogin, register as apiRegister, deleteUser as apiDeleteUser } from '../api/client';
 import type { LoginRequest, RegisterRequest } from '../types';
 import { getToken, setToken, clearToken } from '../services/auth';
 
@@ -11,6 +11,7 @@ interface AuthContextValue {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
+  deleteUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -66,7 +67,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(false);
   };
 
-  const value = useMemo<AuthContextValue>(() => ({ isAuthenticated, loading, error, refresh, login, register, logout }), [isAuthenticated, loading, error]);
+  const deleteUser = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await apiDeleteUser();
+      // After successful deletion, clear token and logout
+      clearToken();
+      setIsAuthenticated(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete account');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const value = useMemo<AuthContextValue>(() => ({ isAuthenticated, loading, error, refresh, login, register, logout, deleteUser }), [isAuthenticated, loading, error]);
 
   return (
     <AuthContext.Provider value={value}>

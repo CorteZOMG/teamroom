@@ -196,6 +196,13 @@ export async function patchProfile(profileData: Partial<ProfileCreationRequest>)
   });
 }
 
+// User account management
+export async function deleteUser(): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>('/api/user', {
+    method: 'DELETE',
+  });
+}
+
 // Session helpers (best-effort; backend does not provide /me)
 export async function logout(): Promise<void> {
   // If backend had a logout, call it; otherwise just clear token client-side.

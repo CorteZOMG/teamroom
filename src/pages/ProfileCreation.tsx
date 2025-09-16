@@ -7,7 +7,7 @@ import type { ProfileData, SelectedFile } from '../types';
 
 export default function ProfileCreation() {
   const navigate = useNavigate();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, deleteUser } = useAuth();
   const [formData, setFormData] = useState<ProfileData>({
     firstName: '',
     lastName: '',
@@ -17,6 +17,8 @@ export default function ProfileCreation() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -158,6 +160,24 @@ export default function ProfileCreation() {
     navigate('/'); // Go back to login page
   };
 
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true);
+    setError(null);
+    
+    try {
+      await deleteUser();
+      // Account deleted successfully, redirect to register page
+      navigate('/register');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete account';
+      setError(errorMessage);
+      console.error('Account deletion error:', err);
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   return (
     <WaveBackground className="font-montserrat">
       
@@ -251,14 +271,12 @@ export default function ProfileCreation() {
           <div className="w-full h-16 bg-red-500 hover:bg-red-600 rounded-[10px] relative shadow-sm hover:shadow-lg transition-all duration-100 active:scale-[0.98]">
             <button 
               type="button"
-              onClick={() => {
-                // Add delete functionality here
-                console.log('Delete profile');
-              }}
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={deleteLoading}
               className="w-full h-full bg-transparent border-none outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:bg-red-500/80 transition-colors duration-150 flex items-center justify-center"
             >
               <span className="text-white text-xl font-normal font-montserrat">
-                Видалити
+                {deleteLoading ? 'Видалення...' : 'Видалити'}
               </span>
             </button>
           </div>
@@ -291,6 +309,36 @@ export default function ProfileCreation() {
         )}
         
       </form>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10000]">
+          <div className="bg-white rounded-[20px] p-8 max-w-md mx-4 shadow-2xl">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+              Видалити акаунт
+            </h3>
+            <p className="text-gray-600 mb-6 text-center">
+              Ви впевнені, що хочете видалити свій акаунт? Ця дія незворотна і видалить всі ваші дані.
+            </p>
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleteLoading}
+                className="flex-1 h-12 bg-gray-300 hover:bg-gray-400 rounded-[10px] text-gray-700 font-medium transition-colors duration-200 disabled:opacity-50"
+              >
+                Скасувати
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteLoading}
+                className="flex-1 h-12 bg-red-500 hover:bg-red-600 rounded-[10px] text-white font-medium transition-colors duration-200 disabled:opacity-50"
+              >
+                {deleteLoading ? 'Видалення...' : 'Видалити'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </WaveBackground>
   );
 }
