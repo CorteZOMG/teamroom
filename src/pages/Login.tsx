@@ -12,7 +12,6 @@ export default function Login() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -27,17 +26,13 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setSuccess(null);
 
     try {
       await authLogin(formData);
-      setSuccess('Login successful! Welcome!');
       console.log('Login successful');
       
-      // Redirect to profile creation after successful login
-      setTimeout(() => {
-        navigate('/profile/create');
-      }, 2000);
+      // Redirect to messenger immediately after successful login
+      navigate('/messenger');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed';
       
@@ -117,13 +112,6 @@ export default function Login() {
           Немає акаунту? Зареєструйтесь
         </div>
         
-        {/* Profile creation link */}
-        <div 
-          className="text-center text-white text-xl font-normal font-montserrat cursor-pointer hover:text-gray-200 transition-colors duration-200 mb-2"
-          onClick={() => navigate('/profile/create')}
-        >
-          Створити/Оновити профіль
-        </div>
         
         {/* Error/Success message - inline text */}
         {error && (
@@ -132,11 +120,6 @@ export default function Login() {
           </div>
         )}
         
-        {success && (
-          <div className="text-center text-green-300 text-lg font-normal font-montserrat">
-            {success}
-          </div>
-        )}
         
       </form>
     </div>

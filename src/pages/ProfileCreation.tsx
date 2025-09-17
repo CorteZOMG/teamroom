@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createProfile, getUploadLink, uploadFile, getPublicLink, updateProfile } from '../api/client';
+import { createProfile, getUploadLink, uploadFile, getPublicLink, updateProfile, getProfile } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import WaveBackground from '../components/WaveBackground';
 import type { ProfileData, SelectedFile } from '../types';
@@ -15,10 +15,12 @@ export default function ProfileCreation() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [existingProfile, setExistingProfile] = useState<any>(null);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -27,8 +29,45 @@ export default function ProfileCreation() {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  // Show loading while checking authentication
-  if (authLoading) {
+  // Check for existing profile and load it
+  useEffect(() => {
+    const loadExistingProfile = async () => {
+      if (!isAuthenticated || authLoading) return;
+      
+      try {
+        setProfileLoading(true);
+        const profile = await getProfile();
+        setExistingProfile(profile);
+        setIsEditing(true);
+        
+        // Load existing profile data into form
+        setFormData({
+          firstName: profile.firstName || '',
+          lastName: profile.lastName || '',
+          biography: profile.biography || ''
+        });
+        
+        // Load existing photo if available
+        if (profile.photoUrl) {
+          setSelectedFile({
+            file: null, // We don't have the actual file, just the URL
+            preview: profile.photoUrl
+          });
+        }
+      } catch (err) {
+        // Profile doesn't exist, user needs to create one
+        console.log('No existing profile found, user needs to create one');
+        setIsEditing(false);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    loadExistingProfile();
+  }, [isAuthenticated, authLoading]);
+
+  // Show loading while checking authentication or loading profile
+  if (authLoading || profileLoading) {
     return (
       <div className="w-screen h-screen flex items-center justify-center bg-white">
         <div className="text-primary text-2xl font-montserrat">Завантаження...</div>
@@ -94,7 +133,6 @@ export default function ProfileCreation() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setSuccess(null);
 
     // Validate all fields before submission
     const firstNameError = validateField('firstName', formData.firstName);
@@ -108,20 +146,13 @@ export default function ProfileCreation() {
     }
 
     try {
-      // Step 1: Create profile first (without photo)
-      console.log('Creating profile without photo first...');
-      const response = await createProfile({
-        ...formData,
-        photoUrl: ''
-      });
+      let photoUrl = existingProfile?.photoUrl || '';
       
-      console.log('Profile created successfully:', response);
-
-      // Step 2: If user selected a photo, upload it and update profile
-      if (selectedFile) {
-        console.log('Now uploading photo and updating profile...');
+      // Step 1: Handle photo upload if user selected a new photo
+      if (selectedFile && selectedFile.file) {
+        console.log('Uploading new photo...');
         
-        // Get upload link (now that profile exists)
+        // Get upload link
         const uploadLinkResponse = await getUploadLink('profile-photo');
         console.log('Got upload link:', uploadLinkResponse);
         
@@ -133,31 +164,42 @@ export default function ProfileCreation() {
         const publicLinkResponse = await getPublicLink(uploadResponse.fileid);
         console.log('Got public link:', publicLinkResponse.link);
         
-        // Update profile with photo
-        const updateResponse = await updateProfile({
-          ...formData,
-          photoUrl: publicLinkResponse.link
-        });
-        console.log('Profile updated with photo:', updateResponse);
+        photoUrl = publicLinkResponse.link;
       }
       
-      setSuccess('Профіль успішно створено!');
+      // Step 2: Create or update profile
+      let response;
+      if (isEditing) {
+        console.log('Updating existing profile...');
+        response = await updateProfile({
+          ...formData,
+          photoUrl: photoUrl
+        });
+        console.log('Profile updated successfully');
+      } else {
+        console.log('Creating new profile...');
+        response = await createProfile({
+          ...formData,
+          photoUrl: photoUrl
+        });
+        console.log('Profile created successfully');
+      }
       
-      // Redirect after successful creation
-      setTimeout(() => {
-        navigate('/dashboard'); // or wherever you want to redirect
-      }, 2000);
+      console.log('Profile operation successful:', response);
+      
+      // Redirect immediately after successful operation
+      navigate('/messenger');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Помилка створення профілю';
+      const errorMessage = err instanceof Error ? err.message : `Помилка ${isEditing ? 'оновлення' : 'створення'} профілю`;
       setError(errorMessage);
-      console.error('Profile creation error:', err);
+      console.error('Profile operation error:', err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    navigate('/'); // Go back to login page
+    navigate('/messenger'); // Go back to messenger
   };
 
   const handleDeleteAccount = async () => {
@@ -191,6 +233,15 @@ export default function ProfileCreation() {
       
       {/* Form container - centered on the colored part */}
       <form onSubmit={handleSubmit} className="absolute right-[30%] top-1/2 transform translate-x-1/2 -translate-y-1/2 w-[511px]">
+        {/* Page Title */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white font-montserrat mb-2">
+            {isEditing ? 'Редагувати профіль' : 'Створити профіль'}
+          </h1>
+          <p className="text-white/80 text-lg font-montserrat">
+            {isEditing ? 'Оновіть інформацію про себе' : 'Заповніть інформацію про себе'}
+          </p>
+        </div>
         {/* Profile Picture Section */}
         <div className="flex flex-col items-center mb-8">
           <div className="relative">
@@ -289,7 +340,7 @@ export default function ProfileCreation() {
               className="w-full h-full bg-transparent border-none outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:bg-green-500/80 transition-colors duration-150 flex items-center justify-center"
             >
               <span className="text-white text-xl font-normal font-montserrat">
-                {loading ? 'Збереження...' : 'Зберегти'}
+                {loading ? (isEditing ? 'Оновлення...' : 'Створення...') : (isEditing ? 'Оновити' : 'Створити')}
               </span>
             </button>
           </div>
@@ -302,11 +353,6 @@ export default function ProfileCreation() {
           </div>
         )}
         
-        {success && (
-          <div className="text-center text-green-300 text-lg font-normal font-montserrat">
-            {success}
-          </div>
-        )}
         
       </form>
 

@@ -25,6 +25,6 @@ export interface ProfileData {
 }
 
 export interface SelectedFile {
-  file: File;
+  file: File | null;
   preview: string;
 }
