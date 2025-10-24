@@ -1,11 +1,21 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useHoverAnimation } from '../hooks/useHoverAnimation';
+import { AnimatedBackground } from '../components/AnimatedBackground';
+import { AnimatedSection } from '../components/AnimatedSection';
+import { AnimatedText } from '../components/AnimatedText';
 import type { LoginRequest } from '../types';
 
 export default function Login() {
   const navigate = useNavigate();
   const { login: authLogin } = useAuth();
+  const { hoverState, config } = useHoverAnimation({
+    transitionDuration: 0.3,
+    scaleFactor: 1.05,
+    threshold: 0.4
+  });
+  
   const [formData, setFormData] = useState<LoginRequest>({
     username: '',
     password: ''
@@ -54,74 +64,112 @@ export default function Login() {
   };
 
   return (
-    <div className="w-screen h-screen relative bg-white overflow-hidden">
-      {/* Left side - Primary background */}
-      <div className="w-[60%] h-full absolute right-0 bg-primary" />
+    <div className="w-screen h-screen relative overflow-hidden">
+      {/* Animated Background */}
+      <AnimatedBackground hoverState={hoverState} transitionDuration={config.transitionDuration} />
       
-      {/* Main heading */}
-      <div className="w-96 h-56 left-[10%] top-1/2 -translate-y-1/2 absolute text-primary text-6xl font-normal font-montserrat">
-        Let's complete an auth
-      </div>
-      
-      {/* Form container - centered on the colored part */}
-      <form onSubmit={handleSubmit} className="absolute right-[30%] top-1/2 transform translate-x-1/2 -translate-y-1/2">
-        {/* Username input background */}
-        <div className="w-[511px] h-24 bg-white rounded-[10px] mb-6 relative shadow-sm hover:shadow-md transition-shadow duration-200">
-          <input
-            type="text"
-            name="username"
-            placeholder="Ім'я"
-            value={formData.username}
-            onChange={handleChange}
-            required
-            className="w-full h-full bg-transparent border-none outline-none px-6 py-2 text-primary text-4xl font-normal font-montserrat placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
-          />
-        </div>
-        
-        {/* Password input background */}
-        <div className="w-[511px] h-24 bg-white rounded-[10px] mb-6 relative shadow-sm hover:shadow-md transition-shadow duration-200">
-          <input
-            type="password"
-            name="password"
-            placeholder="Пароль"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            className="w-full h-full bg-transparent border-none outline-none px-6 py-2 text-primary text-4xl font-normal font-montserrat placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
-          />
-        </div>
-        
-        {/* Submit button background */}
-        <div className="w-[511px] h-24 bg-accent hover:bg-secondary rounded-[10px] mb-6 relative shadow-sm hover:shadow-lg transition-all duration-100 active:scale-[0.98]">
-          <button 
-            type="submit"
-            disabled={loading}
-            className="w-full h-full bg-transparent border-none outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:bg-accent/80 transition-colors duration-150 flex items-center justify-center"
-          >
-            <span className="text-white text-4xl font-normal font-montserrat">
-              {loading ? 'Завантаження...' : 'Авторизуватись'}
-            </span>
-          </button>
-        </div>
-        
-        {/* Register link - with same spacing as input fields */}
-        <div 
-          className="text-center text-white text-2xl font-normal font-montserrat cursor-pointer hover:text-gray-200 transition-colors duration-200 mb-2"
-          onClick={() => navigate('/register')}
+      {/* Left side - Text section */}
+      <AnimatedSection
+        isHovered={hoverState.isLeftHovered}
+        className="absolute top-1/2 -translate-y-1/2 w-96 h-56"
+        style={{
+          left: hoverState.isLeftHovered ? '0%' : '0%',
+          right: hoverState.isLeftHovered ? '40%' : '60%',
+          width: hoverState.isLeftHovered ? '60%' : '40%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+        transitionDuration={config.transitionDuration}
+        scaleFactor={config.scaleFactor}
+      >
+        <AnimatedText
+          hoverState={hoverState}
+          isLeftSide={true}
+          className="text-6xl font-normal font-montserrat"
+          transitionDuration={config.transitionDuration}
         >
-          Немає акаунту? Зареєструйтесь
-        </div>
-        
-        
-        {/* Error/Success message - inline text */}
-        {error && (
-          <div className="text-center text-red-300 text-lg font-normal font-montserrat">
-            {error}
+          Let's<br/>complete an auth
+        </AnimatedText>
+      </AnimatedSection>
+      
+      {/* Right side - Form section */}
+      <AnimatedSection
+        isHovered={hoverState.isRightHovered}
+        className="absolute top-1/2 transform -translate-y-1/2"
+        style={{
+          left: hoverState.isRightHovered ? '40%' : '60%',
+          right: hoverState.isRightHovered ? '0%' : '0%',
+          width: hoverState.isRightHovered ? '60%' : '40%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+        transitionDuration={config.transitionDuration}
+        scaleFactor={config.scaleFactor}
+      >
+        <div className="w-full max-w-[511px] mx-auto">
+          <form onSubmit={handleSubmit}>
+            {/* Username input background */}
+            <div className="w-full h-24 bg-white rounded-[10px] mb-6 relative shadow-sm hover:shadow-md transition-shadow duration-200">
+            <input
+              type="text"
+              name="username"
+              placeholder="Ім'я"
+              value={formData.username}
+              onChange={handleChange}
+              required
+              className="w-full h-full bg-transparent border-none outline-none px-6 py-2 text-primary text-4xl font-normal font-montserrat placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
+            />
           </div>
-        )}
-        
-        
-      </form>
+          
+            {/* Password input background */}
+            <div className="w-full h-24 bg-white rounded-[10px] mb-6 relative shadow-sm hover:shadow-md transition-shadow duration-200">
+            <input
+              type="password"
+              name="password"
+              placeholder="Пароль"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              className="w-full h-full bg-transparent border-none outline-none px-6 py-2 text-primary text-4xl font-normal font-montserrat placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
+            />
+          </div>
+          
+            {/* Submit button background */}
+            <div className="w-full h-24 bg-accent hover:bg-secondary rounded-[10px] mb-6 relative shadow-sm hover:shadow-lg transition-all duration-100 active:scale-[0.98]">
+            <button 
+              type="submit"
+              disabled={loading}
+              className="w-full h-full bg-transparent border-none outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:bg-accent/80 transition-colors duration-150 flex items-center justify-center"
+            >
+              <span className="text-white text-4xl font-normal font-montserrat">
+                {loading ? 'Завантаження...' : 'Авторизуватись'}
+              </span>
+            </button>
+          </div>
+          
+          {/* Register link - with same spacing as input fields */}
+          <AnimatedText
+            hoverState={hoverState}
+            isLeftSide={false}
+            className="text-center text-2xl font-normal font-montserrat cursor-pointer hover:text-gray-200 transition-colors duration-200 mb-2"
+            transitionDuration={config.transitionDuration}
+          >
+            <div onClick={() => navigate('/register')}>
+              Немає акаунту? Зареєструйтесь
+            </div>
+          </AnimatedText>
+          
+            {/* Error message */}
+            {error && (
+              <div className="text-center text-red-300 text-lg font-normal font-montserrat">
+                {error}
+              </div>
+            )}
+          </form>
+        </div>
+      </AnimatedSection>
     </div>
   );
 }

@@ -1,4 +1,6 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL;
+// Use relative URLs if VITE_API_URL is empty (for Docker with nginx proxy)
+// Otherwise use the full URL (for production or development)
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 import { getToken } from '../services/auth';
 import type { 
@@ -18,15 +20,16 @@ const DEFAULT_TIMEOUT_MS = 10000;
 
 export async function apiFetch<T>(
   endpoint: string,
-  options: (RequestInit & { timeoutMs?: number }) = {}
+  options: (RequestInit & { timeoutMs?: number; skipAuth?: boolean }) = {}
 ): Promise<T> {
   const token = getToken();
-  const { timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
+  const { timeoutMs = DEFAULT_TIMEOUT_MS, skipAuth = false, ...fetchOptions } = options;
   
   // Debug logging
   console.log('API Request:', {
     endpoint,
     hasToken: !!token,
+    skipAuth,
     tokenPreview: token ? `${token.substring(0, 20)}...` : 'none',
     method: fetchOptions.method || 'GET'
   });
@@ -39,7 +42,8 @@ export async function apiFetch<T>(
       headers: {
         // Only set Content-Type for JSON, let browser handle FormData
         ...(fetchOptions.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        // Don't add Authorization header if skipAuth is true or if it's a login/register endpoint
+        ...(!skipAuth && token ? { Authorization: `Bearer ${token}` } : {}),
         ...fetchOptions.headers,
       },
       signal: controller.signal,
@@ -49,10 +53,27 @@ export async function apiFetch<T>(
 
     if (!res.ok) {
       let errorText = '';
+      let errorDetails = '';
       try {
         errorText = await res.text();
+        // Try to parse as JSON for more details
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorDetails = errorJson.message || errorJson.error || errorText;
+        } catch {
+          errorDetails = errorText;
+        }
       } catch {}
-      throw new Error(`API error: ${res.status} ${res.statusText}${errorText ? ` - ${errorText}` : ''}`);
+      
+      console.error('API Error Details:', {
+        status: res.status,
+        statusText: res.statusText,
+        endpoint,
+        errorText,
+        errorDetails
+      });
+      
+      throw new Error(`API error: ${res.status} ${res.statusText}${errorDetails ? ` - ${errorDetails}` : ''}`);
     }
 
     return res.json() as Promise<T>;
@@ -71,16 +92,29 @@ export async function apiFetch<T>(
 
 // Authentication functions
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
-  return apiFetch<LoginResponse>('/api/auth/login', {
-    method: 'POST',
-    body: JSON.stringify(credentials),
-  });
+  console.log('Attempting login with:', { username: credentials.username, hasPassword: !!credentials.password });
+  console.log('API Base URL:', API_BASE_URL);
+  console.log('Full URL:', `${API_BASE_URL}/api/auth/login`);
+  
+  try {
+    const result = await apiFetch<LoginResponse>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+      skipAuth: true, // Don't send Authorization header for login
+    });
+    console.log('Login successful, JWT received:', result.jwt ? 'Yes' : 'No');
+    return result;
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
+  }
 }
 
 export async function register(userData: RegisterRequest): Promise<RegisterResponse> {
   return apiFetch<RegisterResponse>('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify(userData),
+    skipAuth: true, // Don't send Authorization header for registration
   });
 }
 

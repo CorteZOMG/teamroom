@@ -4,3 +4,4 @@ export * from './profile';
 export * from './upload';
 export * from './components';
 export * from './websocket';
+export * from './course';

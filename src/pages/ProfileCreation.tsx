@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createProfile, getUploadLink, uploadFile, getPublicLink, updateProfile, getProfile } from '../api/client';
+import { createProfile, updateProfile, getProfile } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { getUsernameFromToken } from '../services/auth';
 import WaveBackground from '../components/WaveBackground';
-import type { ProfileData, SelectedFile } from '../types';
+import { ImageUpload } from '../components/ImageUpload';
+import { generateUniqueProfilePhotoName } from '../api/cloudStorage';
+import type { ProfileData } from '../types';
 
 export default function ProfileCreation() {
   const navigate = useNavigate();
@@ -15,7 +18,7 @@ export default function ProfileCreation() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string>('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -48,11 +51,13 @@ export default function ProfileCreation() {
         });
         
         // Load existing photo if available
+        console.log('Profile loaded:', profile);
+        console.log('Profile photoUrl:', profile.photoUrl);
         if (profile.photoUrl) {
-          setSelectedFile({
-            file: null, // We don't have the actual file, just the URL
-            preview: profile.photoUrl
-          });
+          setPhotoUrl(profile.photoUrl);
+          console.log('Set photoUrl to:', profile.photoUrl);
+        } else {
+          console.log('No photoUrl in profile');
         }
       } catch (err) {
         // Profile doesn't exist, user needs to create one
@@ -114,19 +119,9 @@ export default function ProfileCreation() {
     });
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setSelectedFile({
-          file: file,
-          preview: event.target?.result as string
-        });
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleImageUploadComplete = (publicLink: string) => {
+    setPhotoUrl(publicLink);
+    console.log('Image uploaded successfully, public link:', publicLink);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -146,34 +141,13 @@ export default function ProfileCreation() {
     }
 
     try {
-      let photoUrl = existingProfile?.photoUrl || '';
-      
-      // Step 1: Handle photo upload if user selected a new photo
-      if (selectedFile && selectedFile.file) {
-        console.log('Uploading new photo...');
-        
-        // Get upload link
-        const uploadLinkResponse = await getUploadLink('profile-photo');
-        console.log('Got upload link:', uploadLinkResponse);
-        
-        // Upload file
-        const uploadResponse = await uploadFile(uploadLinkResponse.link, selectedFile.file);
-        console.log('File uploaded, got fileid:', uploadResponse.fileid);
-        
-        // Get public link
-        const publicLinkResponse = await getPublicLink(uploadResponse.fileid);
-        console.log('Got public link:', publicLinkResponse.link);
-        
-        photoUrl = publicLinkResponse.link;
-      }
-      
-      // Step 2: Create or update profile
+      // Create or update profile with the uploaded photo URL
       let response;
       if (isEditing) {
         console.log('Updating existing profile...');
         response = await updateProfile({
           ...formData,
-          photoUrl: photoUrl
+          photoUrl: photoUrl || existingProfile?.photoUrl || ''
         });
         console.log('Profile updated successfully');
       } else {
@@ -244,33 +218,18 @@ export default function ProfileCreation() {
         </div>
         {/* Profile Picture Section */}
         <div className="flex flex-col items-center mb-8">
-          <div className="relative">
-            {/* Profile Picture Container */}
-            <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center overflow-hidden shadow-lg">
-              {selectedFile ? (
-                <img 
-                  src={selectedFile.preview} 
-                  alt="Profile preview" 
-                  className="w-full h-full object-cover rounded-full"
-                />
-              ) : (
-                <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
-                  <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-                </div>
-              )}
-            </div>
-            
-            {/* Edit Button */}
-            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-accent rounded-full flex items-center justify-center cursor-pointer hover:bg-secondary transition-colors duration-200 shadow-lg">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-              <img src="/assets/pen.svg" alt="Edit" className="w-4 h-4" />
-            </div>
-          </div>
+          <ImageUpload
+            purpose="profile-photo"
+            generateUniqueFileName={(file) => {
+              const extension = file.name.split('.').pop() || 'jpg';
+              const username = getUsernameFromToken() || 'user';
+              return generateUniqueProfilePhotoName(username, extension);
+            }}
+            onUploadComplete={handleImageUploadComplete}
+            currentImageUrl={photoUrl}
+            maxSizeMB={5}
+            acceptedFormats={['image/jpeg', 'image/png', 'image/jpg', 'image/webp']}
+          />
         </div>
 
         {/* First Name input background */}

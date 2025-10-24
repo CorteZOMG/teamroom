@@ -19,10 +19,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       path: '/messenger'
     },
     {
-      id: 'courser',
+      id: 'courses',
       label: 'Курси',
       icon: '📚',
-      path: '/courser'
+      path: '/courses'
     }
   ];
 
@@ -71,7 +71,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
               }}
               className={`
                 w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200
-                ${location.pathname === item.path 
+                ${location.pathname === item.path || location.pathname.startsWith(item.path + '/')
                   ? 'bg-white/20 text-white' 
                   : 'text-white/80 hover:bg-white/10 hover:text-white'
                 }

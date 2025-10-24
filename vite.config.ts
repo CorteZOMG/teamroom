@@ -8,4 +8,19 @@ export default defineConfig({
   define: {
     global: 'globalThis',
   },
+  server: {
+    host: true, // Listen on all addresses (for Docker)
+    port: 5173,
+    proxy: {
+      // Proxy API calls to backend in development
+      '/api': {
+        target: process.env.VITE_API_URL || 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/ws': {
+        target: process.env.VITE_WS_URL || 'ws://localhost:8080',
+        ws: true,
+      }
+    }
+  }
 })
