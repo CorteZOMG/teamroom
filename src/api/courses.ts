@@ -210,6 +210,12 @@ export async function submitAssignmentResponse(courseId: number, assignmentId: n
   });
 }
 
+export async function deleteAssignmentResponse(courseId: number, assignmentId: number, responseId: number): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>(`/api/course/${courseId}/assignments/${assignmentId}/responses/${responseId}`, {
+    method: 'DELETE',
+  });
+}
+
 export async function gradeAssignmentResponse(courseId: number, assignmentId: number, responseId: number, data: GradeAssignmentResponseRequest): Promise<{message: string}> {
   return apiFetch<{message: string}>(`/api/course/${courseId}/assignments/${assignmentId}/responses/${responseId}/grade`, {
     method: 'POST',

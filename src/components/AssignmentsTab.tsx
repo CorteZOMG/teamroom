@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getCourseAssignments, createAssignment, deleteAssignment, submitAssignmentResponse, getAssignmentResponses, getMyCourseResponses } from '../api/courses';
+import { getCourseAssignments, createAssignment, deleteAssignment, submitAssignmentResponse, getAssignmentResponses, deleteAssignmentResponse } from '../api/courses';
 import { FileUpload, type UploadedFile } from './FileUpload';
 import { FilePreview } from './FilePreview';
 import StudentResponseView from './StudentResponseView';
@@ -50,31 +50,25 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
       
       const responsesMap = new Map<number, AssignmentResponseDTO[] | null>();
 
+      // DIAGNOSTIC: Temporarily disable fetching student responses to test backend bug hypothesis
+      /*
       if (userRole === 'STUDENT') {
-        try {
-          const myResponsesData = await getMyCourseResponses(courseId);
-          console.log('Student responses data from API:', myResponsesData);
-
-          const responsesByAssignment = new Map<number, AssignmentResponseDTO[]>();
-
-          for (const response of myResponsesData.responses) {
-            if (!responsesByAssignment.has(response.assignmentId)) {
-              responsesByAssignment.set(response.assignmentId, []);
+        for (const assignment of response.assignments) {
+          try {
+            const myResponse = await getMyAssignmentResponse(courseId, assignment.id);
+            responsesMap.set(assignment.id, myResponse ? [myResponse] : null);
+          } catch (err) {
+            if (err instanceof Error && err.message.includes('404')) {
+              responsesMap.set(assignment.id, null);
+            } else {
+              console.error(`Error loading response for assignment ${assignment.id}:`, err);
+              responsesMap.set(assignment.id, null);
             }
-            responsesByAssignment.get(response.assignmentId)!.push(response);
-          }
-          console.log('Processed responses by assignment ID:', responsesByAssignment);
-
-          for (const assignment of response.assignments) {
-            responsesMap.set(assignment.id, responsesByAssignment.get(assignment.id) || null);
-          }
-        } catch (err) {
-          console.error('Error loading student responses:', err);
-          for (const assignment of response.assignments) {
-            responsesMap.set(assignment.id, null);
           }
         }
       } else if (userRole && userRole !== 'STUDENT') {
+      */
+      if (userRole && userRole !== 'STUDENT') {
         for (const assignment of response.assignments) {
           try {
             const responsesData = await getAssignmentResponses(courseId, assignment.id);
@@ -194,10 +188,21 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
 
   const handleSubmitResponse = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedAssignment) return;
+    if (!selectedAssignment) {
+      console.error("handleSubmitResponse called with no selected assignment.");
+      return;
+    }
 
-    if (newResponse.media.length === 0) {
-      setError('Додайте хоча б один файл');
+    const submissionData: CreateAssignmentResponseRequest = {
+      text: newResponse.text,
+      media: newResponse.media.map(m => ({
+        name: m.name,
+        fileUrl: m.fileUrl
+      }))
+    };
+
+    if (submissionData.media.length === 0 && !submissionData.text?.trim()) {
+      setError('Додайте хоча б один файл або напишіть текстову відповідь');
       return;
     }
 
@@ -205,7 +210,22 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
       setSubmitLoading(true);
       setError(null);
       
-      await submitAssignmentResponse(courseId, selectedAssignment.id, newResponse);
+      const responseStatus = getResponseStatus(selectedAssignment.id);
+      const isUpdate = responseStatus.status !== 'not_submitted';
+
+      console.log('SUBMIT: Current response status:', JSON.stringify(responseStatus, null, 2));
+      console.log(`SUBMIT: Submitting response (isUpdate: ${isUpdate}) for assignment ${selectedAssignment.id}`);
+      console.log('SUBMIT: Submission data:', JSON.stringify(submissionData, null, 2));
+
+      if (isUpdate && responseStatus.response) {
+        console.log(`SUBMIT: Deleting existing response with ID: ${responseStatus.response.id}`);
+        await deleteAssignmentResponse(courseId, selectedAssignment.id, responseStatus.response.id);
+        console.log(`SUBMIT: Deletion successful for response ID: ${responseStatus.response.id}`);
+      }
+
+      console.log(`SUBMIT: Submitting new response for assignment ${selectedAssignment.id}`);
+      await submitAssignmentResponse(courseId, selectedAssignment.id, submissionData);
+      console.log(`SUBMIT: New response submission successful for assignment ${selectedAssignment.id}`);
       
       await loadAssignments();
       
@@ -213,13 +233,35 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
       setShowSubmitModal(false);
       setSelectedAssignment(null);
       
-      alert('Відповідь успішно надіслано!');
+      alert(`Відповідь успішно ${isUpdate ? 'оновлено' : 'надіслано'}!`);
     } catch (err) {
       console.error('Error submitting response:', err);
       setError(err instanceof Error ? err.message : 'Не вдалося надіслати відповідь');
     } finally {
       setSubmitLoading(false);
     }
+  };
+
+  const openSubmitModal = (assignment: AssignmentDTO) => {
+    setSelectedAssignment(assignment);
+    const responseStatus = getResponseStatus(assignment.id);
+    
+    if (responseStatus.response) {
+      // Pre-fill form for re-submission
+      setNewResponse({
+        text: '', // We can't pre-fill text as the API doesn't return it for a response
+        media: responseStatus.response.media.map(m => ({
+          name: m.name || 'file',
+          fileUrl: m.fileUrl || '',
+          file: null // We don't have the file object, but fileUrl is enough for display
+        } as UploadedFile))
+      });
+    } else {
+      // Reset for new submission
+      setNewResponse({ text: '', media: [] });
+    }
+    
+    setShowSubmitModal(true);
   };
 
   const isDeadlinePassed = (deadline: string) => {
@@ -336,10 +378,7 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
                           </button>
                           {!responseStatus.response.isGraded && (
                             <button
-                              onClick={() => {
-                                setSelectedAssignment(assignment);
-                                setShowSubmitModal(true);
-                              }}
+                              onClick={() => openSubmitModal(assignment)}
                               className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-[10px] font-montserrat transition-colors duration-200"
                               title="Здати повторно"
                             >
@@ -349,10 +388,7 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
                         </>
                       ) : (
                         <button
-                          onClick={() => {
-                            setSelectedAssignment(assignment);
-                            setShowSubmitModal(true);
-                          }}
+                          onClick={() => openSubmitModal(assignment)}
                           className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-[10px] font-montserrat transition-colors duration-200"
                         >
                           Здати

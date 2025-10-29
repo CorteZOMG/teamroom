@@ -10,9 +10,7 @@ import type {
   RegisterResponse,
   ProfileCreationRequest,
   ProfileCreationResponse,
-  ProfileResponse,
-  UploadLinkResponse,
-  PublicLinkResponse
+  ProfileResponse
 } from '../types';
 
 
@@ -40,8 +38,8 @@ export async function apiFetch<T>(
   try {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
-        // Only set Content-Type for JSON, let browser handle FormData
-        ...(fetchOptions.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+        // Only set Content-Type for JSON if a body exists and it's not FormData
+        ...(fetchOptions.body && !(fetchOptions.body instanceof FormData) ? { "Content-Type": "application/json" } : {}),
         // Don't add Authorization header if skipAuth is true or if it's a login/register endpoint
         ...(!skipAuth && token ? { Authorization: `Bearer ${token}` } : {}),
         ...fetchOptions.headers,
@@ -118,49 +116,7 @@ export async function register(userData: RegisterRequest): Promise<RegisterRespo
   });
 }
 
-// File upload functions
-export async function getUploadLink(purpose: string): Promise<UploadLinkResponse> {
-  console.log('Getting upload link for purpose:', purpose);
-  
-  return apiFetch<UploadLinkResponse>(`/api/cloud-storage/get-upload-link?purpose=${encodeURIComponent(purpose)}`, {
-    method: 'GET',
-  });
-}
 
-export async function uploadFile(uploadUrl: string, file: File): Promise<{ fileid: number }> {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  console.log('Uploading file to:', uploadUrl);
-
-  const response = await fetch(uploadUrl, {
-    method: 'POST',
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw new Error(`File upload failed: ${response.status} ${response.statusText}`);
-  }
-
-  const result = await response.json();
-  console.log('Upload response:', result);
-  
-  // Extract fileid from the response
-  const fileid = result.fileid || (result.fileids && result.fileids[0]);
-  if (!fileid) {
-    throw new Error('No fileid found in upload response');
-  }
-  
-  return { fileid };
-}
-
-export async function getPublicLink(fileid: number): Promise<PublicLinkResponse> {
-  console.log('Getting public link for fileid:', fileid);
-  
-  return apiFetch<PublicLinkResponse>(`/api/cloud-storage/get-public-link?fileid=${fileid}`, {
-    method: 'GET',
-  });
-}
 
 export async function createProfile(profileData: ProfileCreationRequest): Promise<ProfileCreationResponse> {
   // Always use JSON format as per API documentation
