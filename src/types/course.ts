@@ -143,6 +143,7 @@ export interface AssignmentResponseDTO {
 }
 
 export interface CreateAssignmentResponseRequest {
+  text?: string;
   media: Array<{
     name?: string;
     fileUrl: string;
@@ -162,5 +163,3 @@ export interface GradeAssignmentResponseRequest {
 export interface ReturnAssignmentResponseRequest {
   returnComment?: string;
 }
-
-

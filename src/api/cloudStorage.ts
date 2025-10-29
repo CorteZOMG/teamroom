@@ -55,8 +55,12 @@ interface PCloudUploadResponse {
  */
 export async function getUploadLink(purpose: FilePurpose): Promise<string> {
   const response = await apiFetch<UploadLinkResponse>(
-    `/api/cloud-storage/get-upload-link?purpose=${purpose}`,
-    { timeoutMs: 30000 } // 30 seconds timeout for slow backend
+    `/api/cloud-storage/get-upload-link`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ purpose }),
+      timeoutMs: 30000, // 30 seconds timeout for slow backend
+    }
   );
   return response.link;
 }
@@ -102,8 +106,12 @@ export async function uploadFile(
  */
 export async function getPublicLink(fileid: number): Promise<string> {
   const response = await apiFetch<PublicLinkResponse>(
-    `/api/cloud-storage/get-public-link?fileid=${fileid}`,
-    { timeoutMs: 30000 } // 30 seconds timeout for slow backend
+    `/api/cloud-storage/get-public-link`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ fileId: fileid }), // Backend expects fileId (camelCase)
+      timeoutMs: 30000, // 30 seconds timeout for slow backend
+    }
   );
   return response.link;
 }

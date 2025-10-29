@@ -33,6 +33,7 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
   });
   
   const [newResponse, setNewResponse] = useState<CreateAssignmentResponseRequest>({
+    text: '',
     media: []
   });
 
@@ -188,7 +189,7 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
   };
 
   const handleFilesChange = (files: UploadedFile[]) => {
-    setNewResponse({ media: files });
+    setNewResponse(prev => ({ ...prev, media: files }));
   };
 
   const handleSubmitResponse = async (e: React.FormEvent) => {
@@ -208,7 +209,7 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
       
       await loadAssignments();
       
-      setNewResponse({ media: [] });
+      setNewResponse({ text: '', media: [] });
       setShowSubmitModal(false);
       setSelectedAssignment(null);
       
@@ -482,6 +483,16 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
             <h2 className="text-primary text-2xl font-montserrat mb-2">Здати завдання</h2>
             <p className="text-gray-600 font-montserrat mb-6">{selectedAssignment.title}</p>
             <form onSubmit={handleSubmitResponse}>
+              <div className="mb-4">
+                <label className="block text-primary text-lg font-montserrat mb-2">Текстова відповідь</label>
+                <textarea
+                  value={newResponse.text}
+                  onChange={(e) => setNewResponse(prev => ({ ...prev, text: e.target.value }))}
+                  placeholder="Введіть текстову відповідь (необов'язково)"
+                  rows={4}
+                  className="w-full px-4 py-3 bg-gray-50 rounded-[10px] border-2 border-gray-200 focus:border-primary outline-none text-primary text-lg font-montserrat transition-colors duration-200 resize-none"
+                />
+              </div>
               <div className="mb-6">
                 <FileUpload
                   purpose="assignment-response-file"
@@ -504,7 +515,7 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
                   onClick={() => {
                     setShowSubmitModal(false);
                     setSelectedAssignment(null);
-                    setNewResponse({ media: [] });
+                    setNewResponse({ text: '', media: [] });
                     setError(null);
                   }}
                   className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-primary rounded-[10px] font-montserrat text-lg transition-colors duration-200"
