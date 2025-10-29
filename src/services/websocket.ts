@@ -31,10 +31,13 @@ class WebSocketServiceImpl implements WebSocketService {
       return; // Already initialized
     }
 
-    const wsUrl = (import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_URL || 'https://team-room-back.onrender.com')
-      .replace('wss://', 'https://')
-      .replace('ws://', 'http://');
-    const fullWsUrl = `${wsUrl}/ws`;
+    // Determine host, removing any protocol from the environment variable.
+    const host = (import.meta.env.VITE_API_URL || 'team-room-back.onrender.com').replace(/^(wss?|https?):\/\//, '');
+    
+    // Use the current page's protocol to construct the full URL for SockJS.
+    const protocol = window.location.protocol; // http: or https:
+    const fullWsUrl = `${protocol}//${host}/ws`;
+
     console.log('WebSocket URL:', fullWsUrl);
     const socket = new SockJS(fullWsUrl);
     
