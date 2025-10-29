@@ -3,7 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import CourseCard from '../components/CourseCard';
 import { ImageUpload } from '../components/ImageUpload';
-import { getUserCourses, createCourse } from '../api/courses';
+import { getUserCourses, createCourse, addCourseMember } from '../api/courses';
+import { getUsernameFromToken } from '../services/auth';
 import { generateUniqueCoursePhotoName } from '../api/cloudStorage';
 import type { Course, CreateCourseRequest } from '../types';
 
@@ -13,6 +14,8 @@ export default function Courses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinCourseId, setJoinCourseId] = useState('');
   const [createLoading, setCreateLoading] = useState(false);
   const [newCourse, setNewCourse] = useState<CreateCourseRequest>({
     name: '',
@@ -72,6 +75,30 @@ export default function Courses() {
     }
   };
 
+  const handleJoinCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!joinCourseId.trim()) {
+      setError('ID курсу є обов\'язковим');
+      return;
+    }
+
+    try {
+      const username = getUsernameFromToken();
+      if (!username) {
+        setError('Не вдалося отримати ім\'я користувача');
+        return;
+      }
+
+      await addCourseMember(parseInt(joinCourseId), { username, role: 'STUDENT' });
+      setJoinCourseId('');
+      setShowJoinModal(false);
+      await loadCourses();
+    } catch (err) {
+      console.error('Error joining course:', err);
+      setError(err instanceof Error ? err.message : 'Не вдалося приєднатися до курсу');
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <Layout>
@@ -100,10 +127,18 @@ export default function Courses() {
           <h1 className="text-primary text-4xl font-normal font-montserrat">Курси</h1>
           
           <button
+            onClick={() => setShowJoinModal(true)}
+            className="px-6 py-3 bg-primary hover:bg-secondary text-white rounded-[10px] font-montserrat text-lg transition-colors duration-200"
+            disabled
+          >
+            Приєднатися до курсу
+          </button>
+
+          <button
             onClick={() => setShowCreateModal(true)}
             className="px-6 py-3 bg-accent hover:bg-secondary text-white rounded-[10px] font-montserrat text-lg transition-colors duration-200"
           >
-            Приєднатися до курсу
+            Створити курс
           </button>
         </div>
 
@@ -197,6 +232,54 @@ export default function Courses() {
                     className="flex-1 px-6 py-3 bg-accent hover:bg-secondary disabled:opacity-50 text-white rounded-[10px] font-montserrat text-lg transition-colors duration-200"
                   >
                     {createLoading ? 'Створення...' : 'Створити'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Join Course Modal */}
+        {showJoinModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-[10px] p-8 max-w-md w-full mx-4">
+              <h2 className="text-primary text-2xl font-normal font-montserrat mb-6">
+                Приєднатися до курсу
+              </h2>
+              
+              <form onSubmit={handleJoinCourse}>
+                <div className="mb-4">
+                  <label className="block text-primary text-lg font-montserrat mb-2">
+                    ID курсу *
+                  </label>
+                  <input
+                    type="text"
+                    value={joinCourseId}
+                    onChange={(e) => setJoinCourseId(e.target.value)}
+                    placeholder="Введіть ID курсу"
+                    required
+                    className="w-full h-14 px-4 bg-gray-50 rounded-[10px] border-2 border-gray-200 focus:border-primary outline-none text-primary text-lg font-montserrat transition-colors duration-200"
+                  />
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowJoinModal(false);
+                      setJoinCourseId('');
+                      setError(null);
+                    }}
+                    className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-primary rounded-[10px] font-montserrat text-lg transition-colors duration-200"
+                  >
+                    Скасувати
+                  </button>
+                  
+                  <button
+                    type="submit"
+                    className="flex-1 px-6 py-3 bg-accent hover:bg-secondary text-white rounded-[10px] font-montserrat text-lg transition-colors duration-200"
+                  >
+                    Приєднатися
                   </button>
                 </div>
               </form>

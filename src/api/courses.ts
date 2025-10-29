@@ -185,6 +185,18 @@ export async function getAssignmentResponses(courseId: number, assignmentId: num
   return result;
 }
 
+export async function getMyCourseResponses(courseId: number): Promise<{responses: AssignmentResponseDTO[]}> {
+  return apiFetch<{responses: AssignmentResponseDTO[]}>(`/api/course/${courseId}/assignments/my-responses`, {
+    method: 'GET',
+  });
+}
+
+export async function getMyAssignmentResponse(courseId: number, assignmentId: number): Promise<AssignmentResponseDTO> {
+  return apiFetch<AssignmentResponseDTO>(`/api/course/${courseId}/assignments/${assignmentId}/responses/my`, {
+    method: 'GET',
+  });
+}
+
 export async function getAssignmentResponse(courseId: number, assignmentId: number, responseId: number): Promise<AssignmentResponseDTO> {
   return apiFetch<AssignmentResponseDTO>(`/api/course/${courseId}/assignments/${assignmentId}/responses/${responseId}`, {
     method: 'GET',

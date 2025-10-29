@@ -6,9 +6,10 @@ import type { MaterialDTO, CreateMaterialRequest } from '../types';
 interface MaterialsTabProps {
   courseId: number;
   isOpen: boolean;
+  userRole?: string;
 }
 
-export default function MaterialsTab({ courseId, isOpen }: MaterialsTabProps) {
+export default function MaterialsTab({ courseId, isOpen, userRole }: MaterialsTabProps) {
   const [materials, setMaterials] = useState<MaterialDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -128,7 +129,7 @@ export default function MaterialsTab({ courseId, isOpen }: MaterialsTabProps) {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-primary text-2xl font-montserrat">Матеріали</h2>
         
-        {isOpen && (
+        {isOpen && (userRole === 'OWNER' || userRole === 'PROFESSOR') && (
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-6 py-3 bg-accent hover:bg-secondary text-white rounded-[10px] font-montserrat transition-colors duration-200"

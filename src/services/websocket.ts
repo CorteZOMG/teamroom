@@ -31,9 +31,9 @@ class WebSocketServiceImpl implements WebSocketService {
       return; // Already initialized
     }
 
-    // Use dedicated WebSocket URL from environment, fallback to converting API URL
-    const wsUrl = import.meta.env.VITE_WS_URL || 
-      (import.meta.env.VITE_API_URL || 'https://team-room-back.onrender.com').replace('https://', 'http://');
+    const wsUrl = (import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_URL || 'https://team-room-back.onrender.com')
+      .replace('wss://', 'https://')
+      .replace('ws://', 'http://');
     const fullWsUrl = `${wsUrl}/ws`;
     console.log('WebSocket URL:', fullWsUrl);
     const socket = new SockJS(fullWsUrl);

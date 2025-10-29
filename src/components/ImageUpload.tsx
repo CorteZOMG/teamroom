@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, type ChangeEvent } from 'react';
-import { uploadFileAndGetPublicLink, getDownloadLink, type FilePurpose } from '../api/cloudStorage';
+import { uploadFileAndGetPublicLink, getThumbnailLink, type FilePurpose } from '../api/cloudStorage';
 
 interface ImageUploadProps {
   purpose: FilePurpose;
@@ -45,21 +45,20 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
     // If it's a pCloud public link, convert it to download link
     if (currentImageUrl.includes('pcloud.link')) {
-      console.log('ImageUpload: Detected pCloud link, converting to download link');
+      console.log('ImageUpload: Detected pCloud link, converting to thumbnail link');
       setLoadingPreview(true);
-      getDownloadLink(currentImageUrl)
-        .then(downloadLink => {
-          console.log('ImageUpload: Got download link:', downloadLink);
-          setPreview(downloadLink);
-          setLoadingPreview(false);
-        })
-        .catch(err => {
-          console.error('ImageUpload: Failed to load image preview:', err);
-          setLoadingPreview(false);
-          setError(err instanceof Error ? err.message : 'Failed to load existing image');
-          // Show placeholder
-          setPreview(null);
-        });
+      try {
+        const thumbnailUrl = getThumbnailLink(currentImageUrl);
+        console.log('ImageUpload: Got thumbnail link:', thumbnailUrl);
+        setPreview(thumbnailUrl);
+        setLoadingPreview(false);
+      } catch (err) {
+        console.error('ImageUpload: Failed to load image preview:', err);
+        setLoadingPreview(false);
+        setError(err instanceof Error ? err.message : 'Failed to load existing image');
+        // Show placeholder
+        setPreview(null);
+      }
     } else {
       console.log('ImageUpload: Using direct URL');
       // Direct URL (like data URL from file reader)

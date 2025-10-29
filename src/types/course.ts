@@ -132,6 +132,7 @@ export interface AssignmentResponseMediaDTO {
 
 export interface AssignmentResponseDTO {
   id: number;
+  assignmentId: number;
   authorUsername: string;
   isGraded: boolean;
   grade?: number;

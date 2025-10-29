@@ -14,11 +14,11 @@ export default defineConfig({
     proxy: {
       // Proxy API calls to backend in development
       '/api': {
-        target: process.env.VITE_API_URL || 'http://localhost:8080',
+        target: process.env.VITE_API_URL,
         changeOrigin: true,
       },
       '/ws': {
-        target: process.env.VITE_WS_URL || 'ws://localhost:8080',
+        target: process.env.VITE_WS_URL,
         ws: true,
       }
     }

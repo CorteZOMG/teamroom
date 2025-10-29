@@ -151,38 +151,7 @@ export function getViewLink(publicLink: string): string {
  * Triggers browser download dialog
  */
 export async function getDownloadLink(publicLink: string): Promise<string> {
-  console.log('getDownloadLink: Input public link:', publicLink);
-  
-  const code = extractCodeFromPublicLink(publicLink);
-  
-  if (!code) {
-    throw new Error('Invalid pCloud public link - no code parameter found');
-  }
-
-  console.log('getDownloadLink: Extracted code:', code);
-
-  try {
-    const response = await fetch(`https://eapi.pcloud.com/getpublinkdownload?code=${code}`);
-    const data = await response.json();
-
-    if (data.result !== 0) {
-      throw new Error(`pCloud error: ${data.result}`);
-    }
-
-    const host = data.hosts[0];
-    const path = data.path;
-    
-    // Add fordownload=1 to force download
-    const downloadUrl = `https://${host}${path}?fordownload=1`;
-    
-    console.log('getDownloadLink: Generated download URL:', downloadUrl);
-    
-    return downloadUrl;
-  } catch (error) {
-    console.error('Error getting download link:', error);
-    // Fallback to thumbnail for images
-    return getThumbnailLink(publicLink, 1024);
-  }
+  return publicLink;
 }
 
 /**
