@@ -105,15 +105,7 @@ export default function StudentResponseView({ assignment, response: initialRespo
             ))}
           </div>
         ) : (
-          <div className="p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-[10px]">
-            <p className="text-yellow-700 font-montserrat text-sm">
-              <strong>⚠️ Помилка бекенду:</strong> Файли були надіслані, але бекенд не повертає їх у відповіді. 
-              Це відома проблема на стороні сервера. Файли збережено, але наразі їх неможливо переглянути.
-            </p>
-            <p className="text-yellow-600 font-montserrat text-xs mt-2">
-              ID відповіді: {response.id} • Автор: {response.authorUsername}
-            </p>
-          </div>
+          <p className="text-gray-500 font-montserrat">Немає прикріплених файлів.</p>
         )}
       </div>
 

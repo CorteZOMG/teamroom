@@ -176,13 +176,9 @@ export async function deleteAssignment(courseId: number, assignmentId: number): 
 // ===== ASSIGNMENT RESPONSES =====
 
 export async function getAssignmentResponses(courseId: number, assignmentId: number): Promise<{responses: AssignmentResponseDTO[]}> {
-  const result = await apiFetch<{responses: AssignmentResponseDTO[]}>(`/api/course/${courseId}/assignments/${assignmentId}/responses`, {
+  return apiFetch<{responses: AssignmentResponseDTO[]}>(`/api/course/${courseId}/assignments/${assignmentId}/responses`, {
     method: 'GET',
   });
-  
-  console.log('Raw API response for assignment responses:', JSON.stringify(result, null, 2));
-  
-  return result;
 }
 
 export async function getMyCourseResponses(courseId: number): Promise<{responses: AssignmentResponseDTO[]}> {
@@ -230,4 +226,14 @@ export async function returnAssignmentResponse(courseId: number, assignmentId: n
   });
 }
 
+export async function cancelGrade(courseId: number, assignmentId: number, responseId: number): Promise<{message: string}> {
+  return apiFetch<{message: string}>(`/api/course/${courseId}/assignments/${assignmentId}/responses/${responseId}/grade-cancel`, {
+    method: 'POST',
+  });
+}
 
+export async function cancelReturn(courseId: number, assignmentId: number, responseId: number): Promise<{message: string}> {
+  return apiFetch<{message: string}>(`/api/course/${courseId}/assignments/${assignmentId}/responses/${responseId}/return-cancel`, {
+    method: 'POST',
+  });
+}

@@ -54,46 +54,6 @@ export default function Messenger() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [roomMembers, setRoomMembers] = useState<Map<string | number, number>>(new Map());
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      window.location.href = '/';
-    }
-  }, [isAuthenticated, authLoading]);
-
-  // WebSocket connection and message handling
-  useEffect(() => {
-    if (isAuthenticated && !authLoading) {
-      connectWebSocket();
-    }
-
-    return () => {
-      if (isConnected) {
-        webSocketService.disconnect();
-      }
-    };
-  }, [isAuthenticated, authLoading]);
-
-  // Fallback: Retry getting initial data if no rooms are loaded after connection
-  useEffect(() => {
-    if (isConnected && rooms.length === 0) {
-      const timeoutId = setTimeout(() => {
-        console.log('No rooms loaded after 3 seconds, retrying initial data request...');
-        webSocketService.getInitialData();
-      }, 3000);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [isConnected, rooms.length]);
-
-  // Debug: Log messages changes
-  useEffect(() => {
-    console.log('Messages state changed:', messages.length, 'messages');
-    if (messages.length > 0) {
-      console.log('Current messages:', messages);
-    }
-  }, [messages]);
-
   const connectWebSocket = useCallback(() => {
     console.log('Attempting to connect to WebSocket...');
     console.log('WebSocket service state before connect:', {
@@ -136,11 +96,51 @@ export default function Messenger() {
     );
   }, []);
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      window.location.href = '/';
+    }
+  }, [isAuthenticated, authLoading]);
+
+  // WebSocket connection and message handling
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      connectWebSocket();
+    }
+
+    return () => {
+      if (isConnected) {
+        webSocketService.disconnect();
+      }
+    };
+  }, [isAuthenticated, authLoading, connectWebSocket, isConnected]);
+
+  // Fallback: Retry getting initial data if no rooms are loaded after connection
+  useEffect(() => {
+    if (isConnected && rooms.length === 0) {
+      const timeoutId = setTimeout(() => {
+        console.log('No rooms loaded after 3 seconds, retrying initial data request...');
+        webSocketService.getInitialData();
+      }, 3000);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isConnected, rooms.length]);
+
+  // Debug: Log messages changes
+  useEffect(() => {
+    console.log('Messages state changed:', messages.length, 'messages');
+    if (messages.length > 0) {
+      console.log('Current messages:', messages);
+    }
+  }, [messages]);
+
   const handleUserBroadcast = useCallback((broadcast: UserBroadcast) => {
     console.log('User broadcast:', broadcast.type, broadcast.payload);
     
     switch (broadcast.type) {
-      case 'ROOM_CREATED':
+      case 'ROOM_CREATED': {
         console.log('Room created:', broadcast.payload);
         // Normalize room data - ensure both id and roomId are set
         const normalizedRoom = {
@@ -150,7 +150,8 @@ export default function Messenger() {
         };
         setRooms(prev => [...prev, normalizedRoom]);
         break;
-      case 'USER_JOINED':
+      }
+      case 'USER_JOINED': {
         console.log('User joined:', broadcast.payload);
         // Update room member count
         const joinedRoomId = broadcast.payload.roomId;
@@ -177,7 +178,8 @@ export default function Messenger() {
           }));
         }
         break;
-      case 'CHAT_MESSAGE':
+      }
+      case 'CHAT_MESSAGE': {
         // Handle both initial messages and real-time messages
         // Check if this message is for the currently selected room
         const messageRoomId = broadcast.payload.roomId;
@@ -197,11 +199,12 @@ export default function Messenger() {
           setMessages(prev => [...prev, mappedMessage]);
         }
         break;
-      case 'INITIAL_DATA':
+      }
+      case 'INITIAL_DATA': {
         // Handle initial data response
         if (broadcast.payload && broadcast.payload.rooms) {
           // Normalize all rooms to ensure both id and roomId are set
-          const normalizedRooms = broadcast.payload.rooms.map((room: any) => ({
+          const normalizedRooms = broadcast.payload.rooms.map((room: Room) => ({
             ...room,
             id: room.roomId || room.id,
             roomId: room.roomId || room.id
@@ -210,10 +213,11 @@ export default function Messenger() {
           console.log('Initial data loaded:', normalizedRooms.length, 'rooms');
         }
         break;
+      }
       default:
         console.log('Unhandled broadcast type:', broadcast.type);
     }
-  }, [selectedRoom]);
+  }, [selectedRoom, rooms, roomMembers]);
 
   const handleTopicBroadcast = useCallback((broadcast: TopicBroadcast) => {
     console.log('Topic broadcast received:', broadcast);
@@ -221,11 +225,12 @@ export default function Messenger() {
     console.log('Broadcast payload:', broadcast.payload);
     
     switch (broadcast.type) {
-      case 'MESSAGE_RECEIVED':
+      case 'MESSAGE_RECEIVED': {
         console.log('New real-time message received:', broadcast.payload);
         setMessages(prev => [...prev, broadcast.payload]);
         break;
-      case 'CHAT_MESSAGE':
+      }
+      case 'CHAT_MESSAGE': {
         // Handle messages that come through room topic subscriptions
         console.log('Chat message via topic:', broadcast.payload);
         // Map backend message structure to frontend structure
@@ -244,7 +249,8 @@ export default function Messenger() {
           return newMessages;
         });
         break;
-      case 'ROOM_MESSAGES':
+      }
+      case 'ROOM_MESSAGES': {
         // Handle initial room messages
         console.log('Room messages received:', broadcast.payload);
         setMessagesLoading(false);
@@ -276,14 +282,17 @@ export default function Messenger() {
         setMessages(mappedMessages);
         console.log('Messages state should now be:', mappedMessages);
         break;
-      case 'USER_JOINED':
+      }
+      case 'USER_JOINED': {
         console.log('User joined room:', broadcast.payload);
         // Handle user joined event - could update room member count
         break;
-      case 'USER_LEFT':
+      }
+      case 'USER_LEFT': {
         console.log('User left room:', broadcast.payload);
         // Handle user left event - could update room member count
         break;
+      }
       default:
         console.log('Unhandled topic broadcast type:', broadcast.type);
     }
@@ -411,7 +420,10 @@ export default function Messenger() {
     <Layout>
       <div className="flex h-full bg-white">
         {/* Rooms sidebar */}
-        <div className="w-80 border-r border-gray-200 flex flex-col">
+        <div className={`
+          w-full md:w-80 border-r border-gray-200 flex-col
+          ${selectedRoom ? 'hidden md:flex' : 'flex'}
+        `}>
           {/* Header */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-4">
@@ -511,13 +523,21 @@ export default function Messenger() {
         </div>
 
         {/* Chat area */}
-        <div className="flex-1 flex flex-col">
+        <div className={`flex-1 flex-col ${selectedRoom ? 'flex' : 'hidden md:flex'}`}>
           {selectedRoom ? (
             <>
               {/* Chat header */}
               <div className="p-4 border-b border-gray-200 bg-white">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
+                    <button 
+                      className="md:hidden mr-2 text-gray-600 hover:text-gray-900"
+                      onClick={() => setSelectedRoom(null)}
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
                     <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
                       {selectedRoom.photoUrl ? (
                         <img 
@@ -644,7 +664,7 @@ export default function Messenger() {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 items-center justify-center hidden md:flex">
               <div className="text-center text-gray-500">
                 <div className="text-6xl mb-4">💬</div>
                 <h2 className="text-xl font-bold mb-2 font-montserrat">

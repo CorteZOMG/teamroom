@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
@@ -11,6 +11,8 @@ import { getUsernameFromToken } from '../services/auth';
 import type { Course } from '../types';
 
 type TabType = 'feed' | 'materials' | 'assignments' | 'conference' | 'chats' | 'members';
+
+type CourseMemberRole = 'OWNER' | 'PROFESSOR' | 'LEADER' | 'STUDENT' | 'VIEWER';
 
 export default function CourseDetail() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -28,13 +30,7 @@ export default function CourseDetail() {
   const userRole = course?.members.find(m => m.username === currentUser)?.role;
   const isOwnerOrProfessor = userRole === 'OWNER' || userRole === 'PROFESSOR';
 
-  useEffect(() => {
-    if (isAuthenticated && !authLoading && courseId) {
-      loadCourse();
-    }
-  }, [isAuthenticated, authLoading, courseId]);
-
-  const loadCourse = async () => {
+  const loadCourse = useCallback(async () => {
     if (!courseId) return;
 
     try {
@@ -48,13 +44,19 @@ export default function CourseDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [courseId]);
+
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      loadCourse();
+    }
+  }, [isAuthenticated, authLoading, loadCourse]);
 
   const handleChangeRole = async (username: string) => {
     const newRole = prompt('Enter new role (OWNER, PROFESSOR, LEADER, STUDENT, VIEWER):');
     if (newRole && courseId) {
       try {
-        await changeMemberRole(parseInt(courseId), { username, role: newRole as any });
+        await changeMemberRole(parseInt(courseId), { username, role: newRole as CourseMemberRole });
         loadCourse();
       } catch (err) {
         console.error('Error changing role:', err);
@@ -151,8 +153,8 @@ export default function CourseDetail() {
     <Layout>
       <div className="w-full h-full bg-gray-50 flex flex-col">
         {/* Course Header */}
-        <div className="bg-gradient-to-r from-primary to-secondary px-8 py-6">
-          <div className="flex items-center justify-between">
+        <div className="bg-gradient-to-r from-primary to-secondary px-4 sm:px-8 py-6">
+          <div className="flex flex-col md:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/courses')}
@@ -164,7 +166,7 @@ export default function CourseDetail() {
               </button>
               
               <div>
-                <h1 className="text-white text-3xl font-normal font-montserrat">
+                <h1 className="text-white text-2xl sm:text-3xl font-normal font-montserrat">
                   {course.name}
                 </h1>
                 {isOwnerOrProfessor && (
@@ -187,101 +189,72 @@ export default function CourseDetail() {
               </div>
             </div>
 
-            {/* Course photo */}
-            {course.photoUrl && (
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-white/20">
-                <CloudImage
-                  publicLink={course.photoUrl}
-                  alt={course.name}
-                  className="w-full h-full object-cover"
-                  fallbackSrc=""
-                />
-              </div>
-            )}
-            {isOwnerOrProfessor && (
-              <button
-                onClick={() => handleDeleteCourse(course.id)}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-[10px] font-montserrat transition-colors duration-200"
-              >
-                Видалити курс
-              </button>
-            )}
+            <div className="flex items-center gap-4 self-end sm:self-center">
+              {course.photoUrl && (
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-white/20">
+                  <CloudImage
+                    publicLink={course.photoUrl}
+                    alt={course.name}
+                    className="w-full h-full object-cover"
+                    fallbackSrc=""
+                  />
+                </div>
+              )}
+              {isOwnerOrProfessor && (
+                <button
+                  onClick={() => handleDeleteCourse(course.id)}
+                  className="px-4 py-2 bg-error hover:bg-error/80 text-white rounded-[10px] font-montserrat transition-colors duration-200"
+                >
+                  Видалити курс
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="bg-white border-b border-gray-200 px-8">
-          <div className="flex gap-8">
+        <div className="bg-white border-b border-gray-200 px-4 sm:px-8">
+          <div className="flex gap-4 overflow-x-auto whitespace-nowrap">
             <button
               onClick={() => setActiveTab('feed')}
-              className={`py-4 px-2 font-montserrat text-lg transition-colors border-b-2 ${
-                activeTab === 'feed'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-primary'
-              }`}
-            >
+              className={`py-4 px-1 font-montserrat text-lg transition-colors border-b-2 ${activeTab === 'feed' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-primary'}`}>
               Стрічка
             </button>
             
             <button
               onClick={() => setActiveTab('materials')}
-              className={`py-4 px-2 font-montserrat text-lg transition-colors border-b-2 ${
-                activeTab === 'materials'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-primary'
-              }`}
-            >
+              className={`py-4 px-1 font-montserrat text-lg transition-colors border-b-2 ${activeTab === 'materials' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-primary'}`}>
               Матеріали
             </button>
             
             <button
               onClick={() => setActiveTab('assignments')}
-              className={`py-4 px-2 font-montserrat text-lg transition-colors border-b-2 ${
-                activeTab === 'assignments'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-primary'
-              }`}
-            >
+              className={`py-4 px-1 font-montserrat text-lg transition-colors border-b-2 ${activeTab === 'assignments' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-primary'}`}>
               Завдання
             </button>
 
             <button
               onClick={() => setActiveTab('conference')}
-              className={`py-4 px-2 font-montserrat text-lg transition-colors border-b-2 ${
-                activeTab === 'conference'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-primary'
-              }`}
-            >
+              className={`py-4 px-1 font-montserrat text-lg transition-colors border-b-2 ${activeTab === 'conference' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-primary'}`}>
               Конференція
             </button>
             
             <button
               onClick={() => setActiveTab('chats')}
-              className={`py-4 px-2 font-montserrat text-lg transition-colors border-b-2 ${
-                activeTab === 'chats'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-primary'
-              }`}
-            >
+              className={`py-4 px-1 font-montserrat text-lg transition-colors border-b-2 ${activeTab === 'chats' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-primary'}`}>
               Чати
             </button>
             
             <button
               onClick={() => setActiveTab('members')}
-              className={`py-4 px-2 font-montserrat text-lg transition-colors border-b-2 ${
-                activeTab === 'members'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-primary'
-              }`}
-            >
+              className={`py-4 px-1 font-montserrat text-lg transition-colors border-b-2 ${activeTab === 'members' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-primary'}`}>
               Учасники
             </button>
           </div>
         </div>
 
         {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8">
           {activeTab === 'feed' && (
             <div className="text-center text-gray-500 font-montserrat">
               <p className="text-xl">Стрічка курсу</p>
@@ -325,23 +298,26 @@ export default function CourseDetail() {
               {course.members.map((member) => (
                 <div
                   key={member.username}
-                  className="bg-white rounded-[10px] p-4 flex items-center justify-between shadow-sm"
+                  className="bg-white rounded-[10px] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-sm gap-4"
                 >
-                  <div>
-                    <p className="text-primary text-lg font-montserrat">
-                      {member.username}
-                    </p>
-                    <p className="text-gray-500 text-sm font-montserrat">
-                      {member.role}
-                    </p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0"></div>
+                    <div>
+                      <p className="text-primary text-lg font-montserrat">
+                        {member.username}
+                      </p>
+                      <p className="text-gray-500 text-sm font-montserrat">
+                        {member.role}
+                      </p>
+                    </div>
                   </div>
                   
-                  <p className="text-gray-400 text-sm font-montserrat">
+                  <p className="text-gray-400 text-sm font-montserrat self-start sm:self-center">
                     {new Date(member.createdAt).toLocaleDateString('uk-UA')}
                   </p>
 
                   {isOwnerOrProfessor && (
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2 self-end sm:self-center">
                       <button
                         onClick={() => handleChangeRole(member.username)}
                         className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-[10px] font-montserrat transition-colors duration-200"
@@ -350,7 +326,7 @@ export default function CourseDetail() {
                       </button>
                       <button
                         onClick={() => handleRemoveMember(member.username)}
-                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-[10px] font-montserrat transition-colors duration-200"
+                        className="px-4 py-2 bg-error hover:bg-error/80 text-white rounded-[10px] font-montserrat transition-colors duration-200"
                       >
                         Видалити
                       </button>
@@ -364,8 +340,8 @@ export default function CourseDetail() {
 
         {/* Add Member Modal */}
         {showAddMemberModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-[10px] p-8 max-w-md w-full mx-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-[10px] p-8 max-w-md w-full">
               <h2 className="text-primary text-2xl font-normal font-montserrat mb-6">
                 Додати учасника
               </h2>
@@ -413,5 +389,3 @@ export default function CourseDetail() {
     </Layout>
   );
 }
-
-

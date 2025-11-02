@@ -121,25 +121,27 @@ export default function Courses() {
 
   return (
     <Layout>
-      <div className="w-full h-full bg-gray-50 p-8 overflow-y-auto">
+      <div className="w-full h-full bg-gray-50 p-4 sm:p-8 overflow-y-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-primary text-4xl font-normal font-montserrat">Курси</h1>
-          
-          <button
-            onClick={() => setShowJoinModal(true)}
-            className="px-6 py-3 bg-primary hover:bg-secondary text-white rounded-[10px] font-montserrat text-lg transition-colors duration-200"
-            disabled
-          >
-            Приєднатися до курсу
-          </button>
-
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-6 py-3 bg-accent hover:bg-secondary text-white rounded-[10px] font-montserrat text-lg transition-colors duration-200"
-          >
-            Створити курс
-          </button>
+        <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-normal font-montserrat text-primary mb-4 xs:mb-0">
+            Курси
+          </h1>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <button
+              onClick={() => setShowJoinModal(true)}
+              className="px-6 py-3 bg-primary hover:bg-secondary text-white rounded-[10px] font-montserrat text-lg transition-colors duration-200"
+              disabled
+            >
+              Приєднатися до курсу
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-6 py-3 bg-accent hover:bg-secondary text-white rounded-[10px] font-montserrat text-lg transition-colors duration-200"
+            >
+              Створити курс
+            </button>
+          </div>
         </div>
 
         {/* Error message */}
@@ -172,8 +174,8 @@ export default function Courses() {
 
         {/* Create Course Modal */}
         {showCreateModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-[10px] p-8 max-w-md w-full mx-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-[10px] p-8 max-w-md w-full">
               <h2 className="text-primary text-2xl font-normal font-montserrat mb-6">
                 Створити новий курс
               </h2>
@@ -213,7 +215,7 @@ export default function Courses() {
                   />
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-4">
                   <button
                     type="button"
                     onClick={() => {
@@ -241,8 +243,8 @@ export default function Courses() {
 
         {/* Join Course Modal */}
         {showJoinModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-[10px] p-8 max-w-md w-full mx-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-[10px] p-8 max-w-md w-full">
               <h2 className="text-primary text-2xl font-normal font-montserrat mb-6">
                 Приєднатися до курсу
               </h2>
@@ -262,7 +264,7 @@ export default function Courses() {
                   />
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-4">
                   <button
                     type="button"
                     onClick={() => {

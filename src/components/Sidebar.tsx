@@ -45,7 +45,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       <div className={`
         fixed top-0 left-0 h-full w-64 bg-primary transform transition-transform duration-300 z-50
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0 lg:static lg:z-auto
+        lg:translate-x-0 lg:static lg:z-auto lg:flex-shrink-0
       `}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/20">

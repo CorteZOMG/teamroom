@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
-import { getCourseAssignments, createAssignment, deleteAssignment, submitAssignmentResponse, getAssignmentResponses, deleteAssignmentResponse } from '../api/courses';
+import { useState, useEffect, useCallback } from 'react';
+import { getCourseAssignments, createAssignment, deleteAssignment, submitAssignmentResponse, deleteAssignmentResponse, getMyCourseResponses, getAssignmentResponse } from '../api/courses';
 import { FileUpload, type UploadedFile } from './FileUpload';
 import { FilePreview } from './FilePreview';
 import StudentResponseView from './StudentResponseView';
 import TeacherResponsesView from './TeacherResponsesView';
-import { getUsernameFromToken } from '../services/auth';
 import type { AssignmentDTO, CreateAssignmentRequest, CreateAssignmentResponseRequest, AssignmentResponseDTO } from '../types';
 
 interface AssignmentsTabProps {
@@ -23,7 +22,7 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
   const [selectedAssignment, setSelectedAssignment] = useState<AssignmentDTO | null>(null);
   const [createLoading, setCreateLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [userResponses, setUserResponses] = useState<Map<number, AssignmentResponseDTO[] | null>>(new Map());
+  const [userResponses, setUserResponses] = useState<Map<number, AssignmentResponseDTO | null>>(new Map());
   
   const [newAssignment, setNewAssignment] = useState<CreateAssignmentRequest>({
     title: '',
@@ -37,50 +36,46 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
     media: []
   });
 
-  useEffect(() => {
-    loadAssignments();
-  }, [courseId, userRole]);
-
-  const loadAssignments = async () => {
+  const loadAssignments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getCourseAssignments(courseId);
-      setAssignments(response.assignments);
-      
-      const responsesMap = new Map<number, AssignmentResponseDTO[] | null>();
 
-      // DIAGNOSTIC: Temporarily disable fetching student responses to test backend bug hypothesis
-      /*
+      const [assignmentResponse, myResponses] = await Promise.all([
+        getCourseAssignments(courseId),
+        userRole === 'STUDENT' ? getMyCourseResponses(courseId) : Promise.resolve({ responses: [] })
+      ]);
+
+      const assignments = assignmentResponse.assignments;
+      setAssignments(assignments);
+
       if (userRole === 'STUDENT') {
-        for (const assignment of response.assignments) {
-          try {
-            const myResponse = await getMyAssignmentResponse(courseId, assignment.id);
-            responsesMap.set(assignment.id, myResponse ? [myResponse] : null);
-          } catch (err) {
-            if (err instanceof Error && err.message.includes('404')) {
-              responsesMap.set(assignment.id, null);
-            } else {
-              console.error(`Error loading response for assignment ${assignment.id}:`, err);
-              responsesMap.set(assignment.id, null);
+        const responsesMap = new Map<number, any>(); // Use any for now due to API inconsistency
+        for (const response of myResponses.responses) {
+          responsesMap.set(response.assignmentId, response);
+        }
+
+        const detailedResponsesMap = new Map<number, AssignmentResponseDTO | null>();
+        const detailPromises = assignments.map(async (assignment) => {
+          const initialResponse = responsesMap.get(assignment.id);
+          const responseId = initialResponse?.responseId || initialResponse?.id;
+
+          if (responseId) {
+            try {
+              const detailedResponse = await getAssignmentResponse(courseId, assignment.id, responseId);
+              detailedResponsesMap.set(assignment.id, detailedResponse);
+            } catch (err) {
+              console.error(`Error fetching details for response on assignment ${assignment.id}:`, err);
+              detailedResponsesMap.set(assignment.id, initialResponse as AssignmentResponseDTO); // Fallback
             }
+          } else {
+            detailedResponsesMap.set(assignment.id, null);
           }
-        }
-      } else if (userRole && userRole !== 'STUDENT') {
-      */
-      if (userRole && userRole !== 'STUDENT') {
-        for (const assignment of response.assignments) {
-          try {
-            const responsesData = await getAssignmentResponses(courseId, assignment.id);
-            responsesMap.set(assignment.id, responsesData.responses);
-          } catch (err) {
-            console.error(`Error loading responses for assignment ${assignment.id}:`, err);
-            responsesMap.set(assignment.id, null);
-          }
-        }
+        });
+
+        await Promise.all(detailPromises);
+        setUserResponses(detailedResponsesMap);
       }
-      console.log('Final userResponses map to be set:', responsesMap);
-      setUserResponses(responsesMap);
 
     } catch (err) {
       console.error('Error loading assignments:', err);
@@ -88,13 +83,14 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
     } finally {
       setLoading(false);
     }
-  };
+  }, [courseId, userRole]);
 
-  const getResponseStatus = (assignmentId: number, username?: string) => {
-    const targetUsername = username || getUsernameFromToken();
-    const responses = userResponses.get(assignmentId);
-    console.log(`Getting response status for assignment ${assignmentId}:`, responses);
-    const response = responses?.find(r => r.authorUsername === targetUsername);
+  useEffect(() => {
+    loadAssignments();
+  }, [loadAssignments]);
+
+  const getResponseStatus = (assignmentId: number) => {
+    const response = userResponses.get(assignmentId);
     
     if (!response) {
       return {
@@ -210,22 +206,12 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
       setSubmitLoading(true);
       setError(null);
       
-      const responseStatus = getResponseStatus(selectedAssignment.id);
-      const isUpdate = responseStatus.status !== 'not_submitted';
-
-      console.log('SUBMIT: Current response status:', JSON.stringify(responseStatus, null, 2));
-      console.log(`SUBMIT: Submitting response (isUpdate: ${isUpdate}) for assignment ${selectedAssignment.id}`);
-      console.log('SUBMIT: Submission data:', JSON.stringify(submissionData, null, 2));
-
-      if (isUpdate && responseStatus.response) {
-        console.log(`SUBMIT: Deleting existing response with ID: ${responseStatus.response.id}`);
-        await deleteAssignmentResponse(courseId, selectedAssignment.id, responseStatus.response.id);
-        console.log(`SUBMIT: Deletion successful for response ID: ${responseStatus.response.id}`);
+      const existingResponse = userResponses.get(selectedAssignment.id);
+      if (existingResponse && existingResponse.id) {
+        await deleteAssignmentResponse(courseId, selectedAssignment.id, existingResponse.id);
       }
 
-      console.log(`SUBMIT: Submitting new response for assignment ${selectedAssignment.id}`);
       await submitAssignmentResponse(courseId, selectedAssignment.id, submissionData);
-      console.log(`SUBMIT: New response submission successful for assignment ${selectedAssignment.id}`);
       
       await loadAssignments();
       
@@ -233,7 +219,7 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
       setShowSubmitModal(false);
       setSelectedAssignment(null);
       
-      alert(`Відповідь успішно ${isUpdate ? 'оновлено' : 'надіслано'}!`);
+      alert(`Відповідь успішно ${existingResponse ? 'оновлено' : 'надіслано'}!`);
     } catch (err) {
       console.error('Error submitting response:', err);
       setError(err instanceof Error ? err.message : 'Не вдалося надіслати відповідь');
@@ -247,17 +233,15 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
     const responseStatus = getResponseStatus(assignment.id);
     
     if (responseStatus.response) {
-      // Pre-fill form for re-submission
       setNewResponse({
-        text: '', // We can't pre-fill text as the API doesn't return it for a response
+        text: '',
         media: responseStatus.response.media.map(m => ({
           name: m.name || 'file',
           fileUrl: m.fileUrl || '',
-          file: null // We don't have the file object, but fileUrl is enough for display
+          file: null
         } as UploadedFile))
       });
     } else {
-      // Reset for new submission
       setNewResponse({ text: '', media: [] });
     }
     
@@ -352,7 +336,7 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     {(userRole === 'OWNER' || userRole === 'PROFESSOR') && (
                       <button
                         onClick={() => {
@@ -488,7 +472,7 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
                   className="w-full h-14 px-4 bg-gray-50 rounded-[10px] border-2 border-gray-200 focus:border-primary outline-none text-primary text-lg font-montserrat transition-colors duration-200"
                 />
               </div>
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -545,7 +529,7 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
                   label="Прикріплені файли *"
                 />
               </div>
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -583,7 +567,7 @@ export default function AssignmentsTab({ courseId, isOpen, userRole }: Assignmen
             {userRole === 'STUDENT' ? (
               <StudentResponseView
                 assignment={selectedAssignment}
-                response={getResponseStatus(selectedAssignment.id).response}
+                response={userResponses.get(selectedAssignment.id) ?? null}
                 courseId={courseId}
                 onUpdate={loadAssignments}
               />

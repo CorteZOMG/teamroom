@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getCourseMaterials, createMaterial, deleteMaterial } from '../api/courses';
 import { FileUpload, type UploadedFile } from './FileUpload';
 import type { MaterialDTO, CreateMaterialRequest } from '../types';
@@ -26,11 +26,7 @@ export default function MaterialsTab({ courseId, isOpen, userRole }: MaterialsTa
   
   const [newTag, setNewTag] = useState('');
 
-  useEffect(() => {
-    loadMaterials();
-  }, [courseId]);
-
-  const loadMaterials = async () => {
+  const loadMaterials = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -42,7 +38,11 @@ export default function MaterialsTab({ courseId, isOpen, userRole }: MaterialsTa
     } finally {
       setLoading(false);
     }
-  };
+  }, [courseId]);
+
+  useEffect(() => {
+    loadMaterials();
+  }, [loadMaterials]);
 
   const handleAddTag = () => {
     if (newTag.trim() && !newMaterial.tags.some(t => t.name === newTag.trim())) {
@@ -167,7 +167,7 @@ export default function MaterialsTab({ courseId, isOpen, userRole }: MaterialsTa
               className="bg-white rounded-[10px] p-6 shadow-sm hover:shadow-md transition-shadow duration-200"
             >
               {/* Material header */}
-              <div className="flex justify-between items-start mb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start mb-4">
                 <div className="flex-1">
                   <h3 className="text-primary text-xl font-montserrat mb-2">
                     {material.topic}
@@ -293,7 +293,7 @@ export default function MaterialsTab({ courseId, isOpen, userRole }: MaterialsTa
                 <label className="block text-primary text-lg font-montserrat mb-2">
                   Мітки
                 </label>
-                <div className="flex gap-2 mb-2">
+                <div className="flex flex-col sm:flex-row gap-2 mb-2">
                   <input
                     type="text"
                     value={newTag}
@@ -350,7 +350,7 @@ export default function MaterialsTab({ courseId, isOpen, userRole }: MaterialsTa
               </div>
 
               {/* Buttons */}
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -383,5 +383,3 @@ export default function MaterialsTab({ courseId, isOpen, userRole }: MaterialsTa
     </div>
   );
 }
-
-

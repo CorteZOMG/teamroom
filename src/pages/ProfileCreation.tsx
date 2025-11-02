@@ -197,16 +197,129 @@ export default function ProfileCreation() {
   return (
     <WaveBackground className="font-montserrat">
       
-      {/* Back Button - Top Left Corner */}
+      {/* Back Button - Top Left Corner - Responsive */}
       <button
         onClick={handleCancel}
-        className="fixed top-4 left-4 w-14 h-14 flex items-center justify-center cursor-pointer bg-white/20 hover:bg-white/30 rounded-full transition-colors duration-200 z-[9999] backdrop-blur-sm shadow-lg border border-white/30"
+        className="fixed top-2 left-2 sm:top-3 sm:left-3 lg:top-4 lg:left-4 w-9 h-9 sm:w-10 sm:h-10 lg:w-14 lg:h-14 flex items-center justify-center cursor-pointer bg-white/20 hover:bg-white/30 rounded-full transition-colors duration-200 z-[9999] backdrop-blur-sm shadow-lg border border-white/30"
       >
-        <img src="/assets/arrow.svg" alt="Back" className="w-6 h-6" />
+        <img src="/assets/arrow.svg" alt="Back" className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-6 lg:h-6" />
       </button>
       
-      {/* Form container - centered on the colored part */}
-      <form onSubmit={handleSubmit} className="absolute right-[30%] top-1/2 transform translate-x-1/2 -translate-y-1/2 w-[511px]">
+      {/* Mobile/Tablet Card Background - ONLY show below lg breakpoint */}
+      <div className="lg:hidden flex items-center justify-center min-h-screen w-full px-3 py-12 sm:px-4 sm:py-16">
+        <div className="w-full max-w-[340px] sm:max-w-md bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-4 sm:p-5">
+          {/* Page Title - Compact */}
+          <div className="text-center mb-3 sm:mb-4">
+            <h1 className="text-xl sm:text-2xl font-bold text-primary font-montserrat mb-0.5 sm:mb-1">
+              {isEditing ? 'Редагувати профіль' : 'Створити профіль'}
+            </h1>
+            <p className="text-gray-600 text-xs sm:text-sm font-montserrat">
+              {isEditing ? 'Оновіть інформацію про себе' : 'Заповніть інформацію про себе'}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            {/* Profile Picture Section - More compact */}
+            <div className="flex flex-col items-center mb-3 sm:mb-4">
+              <ImageUpload
+                purpose="profile-photo"
+                generateUniqueFileName={(file) => {
+                  const extension = file.name.split('.').pop() || 'jpg';
+                  const username = getUsernameFromToken() || 'user';
+                  return generateUniqueProfilePhotoName(username, extension);
+                }}
+                onUploadComplete={handleImageUploadComplete}
+                currentImageUrl={photoUrl}
+                maxSizeMB={5}
+                acceptedFormats={['image/jpeg', 'image/png', 'image/jpg', 'image/webp']}
+              />
+            </div>
+
+            {/* First Name input - Compact */}
+            <div className="w-full h-10 sm:h-12 bg-gray-100 rounded-lg mb-2 sm:mb-3 relative shadow-sm hover:shadow-md transition-shadow duration-200">
+              <input
+                type="text"
+                name="firstName"
+                placeholder="Ім'я"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                maxLength={32}
+                className="w-full h-full bg-transparent border-none outline-none px-3 py-2 text-primary text-sm sm:text-base font-normal font-montserrat placeholder-gray-400 focus:placeholder-gray-500 transition-colors duration-200"
+              />
+            </div>
+      
+            {/* Last Name input - Compact */}
+            <div className="w-full h-10 sm:h-12 bg-gray-100 rounded-lg mb-2 sm:mb-3 relative shadow-sm hover:shadow-md transition-shadow duration-200">
+              <input
+                type="text"
+                name="lastName"
+                placeholder="Прізвище"
+                value={formData.lastName}
+                onChange={handleChange}
+                maxLength={32}
+                className="w-full h-full bg-transparent border-none outline-none px-3 py-2 text-primary text-sm sm:text-base font-normal font-montserrat placeholder-gray-400 focus:placeholder-gray-500 transition-colors duration-200"
+              />
+            </div>
+
+            {/* Biography textarea - Compact */}
+            <div className="w-full h-14 sm:h-16 bg-gray-100 rounded-lg mb-1 sm:mb-2 relative shadow-sm hover:shadow-md transition-shadow duration-200">
+              <textarea
+                name="biography"
+                placeholder="Біографія"
+                value={formData.biography}
+                onChange={handleChange}
+                maxLength={100}
+                rows={2}
+                className="w-full h-full bg-transparent border-none outline-none px-3 py-2 text-primary text-sm sm:text-base font-normal font-montserrat placeholder-gray-400 focus:placeholder-gray-500 transition-colors duration-200 resize-none"
+              />
+            </div>
+            <div className="text-right text-gray-600 text-xs mb-3 sm:mb-4">
+              {formData.biography.length}/100
+            </div>
+      
+            {/* Action Buttons - More compact */}
+            <div className="flex gap-2 mb-2 sm:mb-3">
+              {/* Delete Button */}
+              <div className="w-full h-10 sm:h-12 bg-red-500 hover:bg-red-600 rounded-lg relative shadow-sm hover:shadow-lg transition-all duration-100 active:scale-[0.98]">
+                <button 
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={deleteLoading}
+                  className="w-full h-full bg-transparent border-none outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:bg-red-500/80 transition-colors duration-150 flex items-center justify-center"
+                >
+                  <span className="text-white text-sm sm:text-base font-medium font-montserrat">
+                    {deleteLoading ? 'Видалення...' : 'Видалити'}
+                  </span>
+                </button>
+              </div>
+
+              {/* Create/Save Button - Accent color */}
+              <div className="w-full h-10 sm:h-12 bg-accent hover:bg-secondary rounded-lg relative shadow-sm hover:shadow-lg transition-all duration-100 active:scale-[0.98]">
+                <button 
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-full bg-transparent border-none outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:bg-accent/80 transition-colors duration-150 flex items-center justify-center"
+                >
+                  <span className="text-white text-sm sm:text-base font-medium font-montserrat">
+                    {loading ? (isEditing ? 'Оновлення...' : 'Створення...') : (isEditing ? 'Оновити' : 'Створити')}
+                  </span>
+                </button>
+              </div>
+            </div>
+      
+            {/* Error message - Compact */}
+            {error && (
+              <div className="text-center text-red-500 text-xs sm:text-sm font-normal font-montserrat">
+                {error}
+              </div>
+            )}
+          </form>
+        </div>
+      </div>
+
+      {/* Desktop Layout - Original design - ONLY show on lg+ */}
+      <form onSubmit={handleSubmit} className="hidden lg:block absolute right-[30%] top-1/2 transform translate-x-1/2 -translate-y-1/2 w-[511px]">
         {/* Page Title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white font-montserrat mb-2">
@@ -216,6 +329,7 @@ export default function ProfileCreation() {
             {isEditing ? 'Оновіть інформацію про себе' : 'Заповніть інформацію про себе'}
           </p>
         </div>
+
         {/* Profile Picture Section */}
         <div className="flex flex-col items-center mb-8">
           <ImageUpload
@@ -232,7 +346,7 @@ export default function ProfileCreation() {
           />
         </div>
 
-        {/* First Name input background */}
+        {/* First Name input */}
         <div className="w-full h-16 bg-white rounded-[10px] mb-4 relative shadow-sm hover:shadow-md transition-shadow duration-200">
           <input
             type="text"
@@ -245,8 +359,8 @@ export default function ProfileCreation() {
             className="w-full h-full bg-transparent border-none outline-none px-4 py-2 text-primary text-xl font-normal font-montserrat placeholder-gray-400 focus:placeholder-gray-300 transition-colors duration-200"
           />
         </div>
-        
-        {/* Last Name input background */}
+      
+        {/* Last Name input */}
         <div className="w-full h-16 bg-white rounded-[10px] mb-4 relative shadow-sm hover:shadow-md transition-shadow duration-200">
           <input
             type="text"
@@ -259,7 +373,7 @@ export default function ProfileCreation() {
           />
         </div>
 
-        {/* Biography input background */}
+        {/* Biography textarea */}
         <div className="w-full h-20 bg-white rounded-[10px] mb-4 relative shadow-sm hover:shadow-md transition-shadow duration-200">
           <textarea
             name="biography"
@@ -274,9 +388,9 @@ export default function ProfileCreation() {
         <div className="text-right text-white text-sm mb-6">
           {formData.biography.length}/100
         </div>
-        
+      
         {/* Action Buttons */}
-        <div className="flex space-x-4 mb-6">
+        <div className="flex gap-4 mb-6">
           {/* Delete Button */}
           <div className="w-full h-16 bg-red-500 hover:bg-red-600 rounded-[10px] relative shadow-sm hover:shadow-lg transition-all duration-100 active:scale-[0.98]">
             <button 
@@ -292,11 +406,11 @@ export default function ProfileCreation() {
           </div>
 
           {/* Create/Save Button */}
-          <div className="w-full h-16 bg-green-500 hover:bg-green-600 rounded-[10px] relative shadow-sm hover:shadow-lg transition-all duration-100 active:scale-[0.98]">
+          <div className="w-full h-16 bg-accent hover:bg-secondary rounded-[10px] relative shadow-sm hover:shadow-lg transition-all duration-100 active:scale-[0.98]">
             <button 
               type="submit"
               disabled={loading}
-              className="w-full h-full bg-transparent border-none outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:bg-green-500/80 transition-colors duration-150 flex items-center justify-center"
+              className="w-full h-full bg-transparent border-none outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:bg-accent/80 transition-colors duration-150 flex items-center justify-center"
             >
               <span className="text-white text-xl font-normal font-montserrat">
                 {loading ? (isEditing ? 'Оновлення...' : 'Створення...') : (isEditing ? 'Оновити' : 'Створити')}
@@ -304,39 +418,37 @@ export default function ProfileCreation() {
             </button>
           </div>
         </div>
-        
-        {/* Error/Success message - inline text */}
+      
+        {/* Error message */}
         {error && (
           <div className="text-center text-red-300 text-lg font-normal font-montserrat">
             {error}
           </div>
         )}
-        
-        
       </form>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation Dialog - Compact */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10000]">
-          <div className="bg-white rounded-[20px] p-8 max-w-md mx-4 shadow-2xl">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10000] px-4">
+          <div className="bg-white rounded-2xl p-4 sm:p-5 md:p-6 max-w-[300px] sm:max-w-sm w-full shadow-2xl">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 text-center">
               Видалити акаунт
             </h3>
-            <p className="text-gray-600 mb-6 text-center">
+            <p className="text-gray-600 text-xs sm:text-sm mb-4 sm:mb-5 text-center leading-relaxed">
               Ви впевнені, що хочете видалити свій акаунт? Ця дія незворотна і видалить всі ваші дані.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex gap-2 sm:gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={deleteLoading}
-                className="flex-1 h-12 bg-gray-300 hover:bg-gray-400 rounded-[10px] text-gray-700 font-medium transition-colors duration-200 disabled:opacity-50"
+                className="flex-1 h-10 sm:h-11 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 font-medium transition-colors duration-200 disabled:opacity-50 text-sm"
               >
                 Скасувати
               </button>
               <button
                 onClick={handleDeleteAccount}
                 disabled={deleteLoading}
-                className="flex-1 h-12 bg-red-500 hover:bg-red-600 rounded-[10px] text-white font-medium transition-colors duration-200 disabled:opacity-50"
+                className="flex-1 h-10 sm:h-11 bg-red-500 hover:bg-red-600 rounded-lg text-white font-medium transition-colors duration-200 disabled:opacity-50 text-sm"
               >
                 {deleteLoading ? 'Видалення...' : 'Видалити'}
               </button>

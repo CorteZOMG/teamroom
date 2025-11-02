@@ -62,7 +62,7 @@ export default function CourseCard({ course }: CourseCardProps) {
 
       {/* Footer */}
       <div className="text-white/90 text-xs space-y-1 pt-2 border-t border-white/20">
-        <div className="flex justify-between">
+        <div className="flex flex-col sm:flex-row justify-between">
           <span>Ваша роль: <span className="font-semibold">{userRole}</span></span>
           <span>
             {course.members.length} {course.members.length === 1 ? 'учасник' : 'учасників'}

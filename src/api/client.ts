@@ -16,6 +16,17 @@ import type {
 
 const DEFAULT_TIMEOUT_MS = 10000;
 
+export class HttpError extends Error {
+  status: number;
+  data: unknown;
+
+  constructor(status: number, data: unknown, message: string) {
+    super(message);
+    this.status = status;
+    this.data = data;
+  }
+}
+
 export async function apiFetch<T>(
   endpoint: string,
   options: (RequestInit & { timeoutMs?: number; skipAuth?: boolean }) = {}
@@ -50,33 +61,20 @@ export async function apiFetch<T>(
     });
 
     if (!res.ok) {
-      let errorText = '';
-      let errorDetails = '';
+      let errorData: unknown = null;
       try {
-        errorText = await res.text();
-        // Try to parse as JSON for more details
-        try {
-          const errorJson = JSON.parse(errorText);
-          errorDetails = errorJson.message || errorJson.error || errorText;
-        } catch {
-          errorDetails = errorText;
-        }
-      } catch {}
-      
-      console.error('API Error Details:', {
-        status: res.status,
-        statusText: res.statusText,
-        endpoint,
-        errorText,
-        errorDetails
-      });
-      
-      throw new Error(`API error: ${res.status} ${res.statusText}${errorDetails ? ` - ${errorDetails}` : ''}`);
+        // Try to parse error response as JSON
+        errorData = await res.json();
+      } catch (e) {
+        // Ignore if response is not JSON, as it might be plain text or empty
+      }
+      console.error('HTTP Error:', res.status, errorData);
+      throw new HttpError(res.status, errorData, `HTTP Error: ${res.status}`);
     }
 
     return res.json() as Promise<T>;
   } catch (err) {
-    if ((err as any)?.name === 'AbortError') {
+    if (err instanceof Error && err.name === 'AbortError') {
       throw new Error('Request timed out. Please check your internet connection and try again.');
     }
     if (typeof navigator !== 'undefined' && navigator && !navigator.onLine) {
@@ -87,7 +85,6 @@ export async function apiFetch<T>(
     clearTimeout(timeoutId);
   }
 }
-
 // Authentication functions
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
   console.log('Attempting login with:', { username: credentials.username, hasPassword: !!credentials.password });
@@ -162,7 +159,7 @@ export async function updateProfile(profileData: Partial<ProfileCreationRequest>
 }
 
 export async function patchProfile(profileData: Partial<ProfileCreationRequest>): Promise<ProfileCreationResponse> {
-  const jsonData: any = {};
+  const jsonData: Partial<ProfileCreationRequest> = {};
   
   if (profileData.firstName !== undefined) {
     jsonData.firstName = profileData.firstName;
@@ -185,7 +182,6 @@ export async function patchProfile(profileData: Partial<ProfileCreationRequest>)
     body: JSON.stringify(jsonData),
   });
 }
-
 // User account management
 export async function deleteUser(): Promise<{ message: string }> {
   return apiFetch<{ message: string }>('/api/user', {
