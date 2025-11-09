@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { login as apiLogin, register as apiRegister, deleteUser as apiDeleteUser } from '../api/client';
 import type { LoginRequest, RegisterRequest } from '../types';
-import { getToken, setToken, clearToken } from '../services/auth';
+import { getToken, setToken, clearToken, getUsernameFromToken } from '../services/auth';
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -12,6 +12,7 @@ interface AuthContextValue {
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   deleteUser: () => Promise<void>;
+  getUsername: () => string | null;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -91,7 +92,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const value = useMemo<AuthContextValue>(() => ({ isAuthenticated, loading, error, refresh, login, register, logout, deleteUser }), [isAuthenticated, loading, error]);
+  const getUsername = () => getUsernameFromToken();
+
+  const value = useMemo<AuthContextValue>(() => ({ isAuthenticated, loading, error, refresh, login, register, logout, deleteUser, getUsername }), [isAuthenticated, loading, error]);
 
   return (
     <AuthContext.Provider value={value}>

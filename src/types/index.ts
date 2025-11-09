@@ -1,7 +1,9 @@
-// Re-export all types for easy importing
 export * from './auth';
+export * from './chat';
+export * from './course';
+export * from './components';
+export * from './message';
 export * from './profile';
 export * from './upload';
-export * from './components';
+export * from './user';
 export * from './websocket';
-export * from './course';

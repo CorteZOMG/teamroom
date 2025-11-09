@@ -63,16 +63,25 @@ export async function apiFetch<T>(
     if (!res.ok) {
       let errorData: unknown = null;
       try {
-        // Try to parse error response as JSON
         errorData = await res.json();
       } catch (e) {
-        // Ignore if response is not JSON, as it might be plain text or empty
+        // Ignore if response is not JSON
       }
       console.error('HTTP Error:', res.status, errorData);
       throw new HttpError(res.status, errorData, `HTTP Error: ${res.status}`);
     }
 
-    return res.json() as Promise<T>;
+    const responseText = await res.text();
+    try {
+      return JSON.parse(responseText) as T;
+    } catch (e) {
+      // Handle cases where the response body is empty but the request was successful (e.g., 201 or 204)
+      if (responseText === '') {
+        return null as T; // Or {} as T, depending on desired behavior for empty success
+      }
+      // Re-throw if it's a genuine JSON parsing error on non-empty text
+      throw new Error(`Failed to parse JSON response: ${responseText}`);
+    }
   } catch (err) {
     if (err instanceof Error && err.name === 'AbortError') {
       throw new Error('Request timed out. Please check your internet connection and try again.');

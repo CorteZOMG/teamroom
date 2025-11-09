@@ -1,90 +1,151 @@
-// WebSocket message types
-export interface ChatMessage {
-  roomId: string | number; // Backend sends numbers
-  sender: string;
+import type { ChatMessage, Reaction } from './message';
+import type { ChatRole, ChatType } from './chat';
+
+// --- Inbound (from server) ---
+
+// General broadcast structure
+export interface WebSocketBroadcast<T, P> {
+  type: T;
+  payload: P;
+}
+
+// Notifications via /user/queue/notifications
+export type UserNotificationType =
+  | 'JOINED_TO_CHAT'
+  | 'REMOVED_FROM_CHAT'
+  | 'ROLE_CHANGED_IN_CHAT'
+  | 'CHAT_UPDATED'
+  | 'CHAT_DELETED';
+
+export interface JoinedToChatPayload {
+  chat_id: number;
+  chat_name: string;
+  chat_type: ChatType;
+  chat_photoUrl: string;
+  role: ChatRole;
+  joined_at: string;
+}
+
+export interface RemovedFromChatPayload {
+  chat_id: number;
+  chat_name: string;
+  chat_type: ChatType;
+  chat_photoUrl: string;
+}
+
+export interface RoleChangedInChatPayload {
+  chat_id: number;
+  chat_name: string;
+  chat_type: ChatType;
+  chat_photoUrl: string;
+  old_role: ChatRole;
+  new_role: ChatRole;
+}
+
+export interface ChatUpdatedPayload {
+    chat_id: number;
+    chat_name: string;
+    chat_type: ChatType;
+    chat_photoUrl: string;
+}
+
+export interface ChatDeletedPayload {
+    chat_id: number;
+    chat_name: string;
+    chat_type: ChatType;
+    chat_photoUrl: string;
+}
+
+export type UserNotification =
+  | WebSocketBroadcast<'JOINED_TO_CHAT', JoinedToChatPayload>
+  | WebSocketBroadcast<'REMOVED_FROM_CHAT', RemovedFromChatPayload>
+  | WebSocketBroadcast<'ROLE_CHANGED_IN_CHAT', RoleChangedInChatPayload>
+  | WebSocketBroadcast<'CHAT_UPDATED', ChatUpdatedPayload>
+  | WebSocketBroadcast<'CHAT_DELETED', ChatDeletedPayload>;
+
+
+// Messages via /topic/chats/{chatId}
+export type ChatBroadcastType =
+  | 'USER_MESSAGE'
+  | 'SYSTEM_MESSAGE' // This is a new type for system messages
+  | 'REACTION_UPDATE'
+  | 'MESSAGE_UPDATE'
+  | 'MESSAGE_DELETED'
+  | 'START_TYPING'
+  | 'STOP_TYPING'
+  | 'READ_LAST_MESSAGE';
+
+export type ReactionUpdatePayload = Reaction;
+
+export type MessageUpdatePayload = ChatMessage;
+
+export interface MessageDeletedPayload {
+  messageId: number;
+  deletedAt: string;
+}
+
+export interface TypingPayload {
+  username: string;
+}
+
+export interface ReadLastMessagePayload {
+  username: string;
+  lastReadMessageId: number;
+  lastReadAt: string;
+}
+
+export type ChatBroadcast =
+  | WebSocketBroadcast<'USER_MESSAGE', ChatMessage>
+  | WebSocketBroadcast<'SYSTEM_MESSAGE', ChatMessage>
+  | WebSocketBroadcast<'REACTION_UPDATE', ReactionUpdatePayload>
+  | WebSocketBroadcast<'MESSAGE_UPDATE', MessageUpdatePayload>
+  | WebSocketBroadcast<'MESSAGE_DELETED', MessageDeletedPayload>
+  | WebSocketBroadcast<'START_TYPING', TypingPayload>
+  | WebSocketBroadcast<'STOP_TYPING', TypingPayload>
+  | WebSocketBroadcast<'READ_LAST_MESSAGE', ReadLastMessagePayload>;
+
+
+// --- Outbound (to server) ---
+
+export interface SendMessageRequest {
   content: string;
-  type: 'CHAT' | 'JOIN'; // Backend sends different message types
-  timestamp?: string;
-  id?: string;
-  // Backend fields for mapping
-  senderUsername?: string;
+  replyToMessageId?: number | null;
+  relatedEntities?: {
+    relatedEntityType: 'ASSIGNMENT' | 'MATERIAL';
+    relatedEntityId: number;
+  }[];
+  media?: {
+    fileUrl: string;
+    fileName?: string | null;
+    fileType?: string | null;
+    fileSizeBytes?: number | null;
+  }[];
 }
 
-export interface Room {
-  id?: string; // Optional for backward compatibility
-  roomId?: string; // Backend sends this field
-  roomName: string;
-  photoUrl?: string;
-  members?: RoomMember[];
-  lastMessage?: ChatMessage;
-  unreadCount?: number;
-  memberCount?: number;
+export interface ReactRequest {
+  messageId: number;
+  emoji: string;
 }
 
-export interface RoomMember {
-  id: string;
-  username: string;
-  photoUrl?: string;
-  isOnline?: boolean;
-  userId?: string; // Alternative field name for compatibility
+export interface EditMessageRequest {
+  messageId: number;
+  content: string;
+  relatedEntities?: {
+    relatedEntityType: 'ASSIGNMENT' | 'MATERIAL';
+    relatedEntityId: number;
+  }[];
+  media?: {
+    fileUrl: string;
+    fileName?: string | null;
+    fileType?: string | null;
+    fileSizeBytes?: number | null;
+  }[];
 }
 
-// WebSocket broadcast types
-export interface UserBroadcast {
-  type: 'ROOM_CREATED' | 'USER_JOINED' | 'CHAT_MESSAGE' | 'USER_LEFT' | 'ROOM_UPDATED' | 'INITIAL_DATA';
-  payload: any;
-  timestamp?: string;
+export interface DeleteMessageRequest {
+  messageId: number;
 }
 
-export interface TopicBroadcast {
-  type: 'MESSAGE_RECEIVED' | 'USER_JOINED' | 'USER_LEFT' | 'ROOM_UPDATED' | 'ROOM_MESSAGES' | 'CHAT_MESSAGE';
-  payload: any;
-  timestamp?: string;
-}
-
-// WebSocket request types
-export interface CreateRoomRequest {
-  roomName: string;
-  photoUrl?: string;
-}
-
-export interface JoinRoomRequest {
-  roomId: string;
-  username: string;
-}
-
-export interface GetRoomMembersRequest {
-  roomId: string | number;
-}
-
-export interface GetRoomMessagesRequest {
-  roomId: string | number;
-}
-
-// WebSocket service callbacks
-export type OnConnectedCallback = () => void;
-export type OnErrorCallback = (error: any) => void;
-export type OnUserBroadcastCallback = (broadcast: UserBroadcast) => void;
-export type OnTopicBroadcastCallback = (broadcast: TopicBroadcast) => void;
-
-// WebSocket service interface
-export interface WebSocketService {
-  connect: (onConnected: OnConnectedCallback, onError: OnErrorCallback) => void;
-  disconnect: () => void;
-  isConnected: () => boolean;
-  
-  // User broadcasts
-  subscribeToUserBroadcasts: (callback: OnUserBroadcastCallback) => void;
-  
-  // Room operations
-  createRoom: (request: CreateRoomRequest) => void;
-  joinRoom: (request: JoinRoomRequest) => void;
-  getRoomMembers: (request: GetRoomMembersRequest) => void;
-  getRoomMessages: (request: GetRoomMessagesRequest) => void;
-  getInitialData: () => void;
-  
-  // Messaging
-  sendMessage: (message: ChatMessage) => void;
-  subscribeToRoom: (roomId: string, callback: OnTopicBroadcastCallback) => void;
-  unsubscribeFromRoom: (roomId: string) => void;
+export interface ReadMessageRequest {
+  lastReadMessageId: number;
 }
