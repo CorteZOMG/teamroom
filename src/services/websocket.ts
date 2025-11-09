@@ -29,11 +29,20 @@ class WebSocketService {
     }
 
     const getWebSocketUrl = (): string => {
-      // Always use a relative path.
+      // Check if we have an explicit WebSocket URL from environment variables
+      const envWsUrl = import.meta.env.VITE_WS_URL;
+      
+      if (envWsUrl) {
+        // Production: use the explicit URL (e.g., wss://your-backend.render.com/ws)
+        return envWsUrl;
+      }
+      
+      // Development/Docker: use relative path
       // In development, this will be intercepted by the Vite proxy.
-      // In production, this assumes the frontend is served from the same
-      // host as the backend, or a reverse proxy is in place.
-      return '/ws';
+      // In Docker, nginx will proxy this to the backend.
+      else {
+        return '/ws';
+      }
     }
 
     const fullWsUrl = getWebSocketUrl();
