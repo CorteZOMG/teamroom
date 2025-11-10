@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { getUsernameFromToken } from '../services/auth';
@@ -74,7 +75,7 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
     return (
       <div className="w-full h-[600px] rounded-[10px] overflow-hidden shadow-lg">
         <JitsiMeeting
-          domain="https://team-room-jitsi.duckdns.org/"
+          domain="team-room-jitsi.duckdns.org"
           roomName={jitsiConfig.roomName}
           jwt={jitsiConfig.jwt}
           userInfo={{
