@@ -1,7 +1,5 @@
-
 import { useState } from 'react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
-import { getUsernameFromToken } from '../services/auth';
 import { createConference, joinConference } from '../api/conferences';
 import { useConferences } from '../context/ConferenceContext';
 import type { Conference, ConferenceRole } from '../types';
@@ -25,7 +23,6 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
   const [newConferenceSubject, setNewConferenceSubject] = useState('');
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const username = getUsernameFromToken() || 'Guest';
   const isProfessor = userRole === 'OWNER' || userRole === 'PROFESSOR';
 
   const handleCreateConference = async () => {
@@ -36,7 +33,22 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
     try {
       setActionError(null);
       const { jwt, roomName, role } = await createConference(courseId, newConferenceSubject);
-      setJitsiConfig({ jwt, roomName, subject: newConferenceSubject, role });
+      
+      let waitMs = 1500;
+      try {
+        const payload = JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        const now = Math.floor(Date.now() / 1000);
+        const nbfOrIat = payload.nbf || payload.iat || now;
+        const calculatedWait = Math.max(0, (nbfOrIat - now) * 1000 + 500);
+        waitMs = Math.max(1500, calculatedWait);
+      } catch (e) {
+        console.warn('Could not decode JWT, using default delay:', e);
+      }
+      
+      setTimeout(() => {
+        setJitsiConfig({ jwt, roomName, subject: newConferenceSubject, role });
+      }, waitMs);
+      
       setShowCreateModal(false);
       setNewConferenceSubject('');
       refreshConferences();
@@ -50,7 +62,21 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
     try {
       setActionError(null);
       const { jwt, roomName, role } = await joinConference(courseId, conf.id);
-      setJitsiConfig({ jwt, roomName, subject: conf.subject, role });
+      
+      let waitMs = 1500;
+      try {
+        const payload = JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        const now = Math.floor(Date.now() / 1000);
+        const nbfOrIat = payload.nbf || payload.iat || now;
+        const calculatedWait = Math.max(0, (nbfOrIat - now) * 1000 + 500);
+        waitMs = Math.max(1500, calculatedWait);
+      } catch (e) {
+        console.warn('Could not decode JWT, using default delay:', e);
+      }
+      
+      setTimeout(() => {
+        setJitsiConfig({ jwt, roomName, subject: conf.subject, role });
+      }, waitMs);
     } catch (err) {
       setActionError('Не вдалося приєднатися до конференції.');
       console.error(err);
@@ -78,15 +104,10 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
           domain="team-room-jitsi.duckdns.org"
           roomName={jitsiConfig.roomName}
           jwt={jitsiConfig.jwt}
-          userInfo={{
-            displayName: username,
-            email: `${username.replace(/\s/g, '_')}@teamroom.com`
-          }}
           configOverwrite={{
             startWithAudioMuted: true,
             startWithVideoMuted: isViewer,
             prejoinPageEnabled: true,
-            subject: jitsiConfig.subject,
             toolbarButtons: isViewer ? ['fullscreen', 'tileview'] : undefined,
             disableSelfView: isViewer,
           }}
@@ -130,7 +151,7 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
               <div>
                 <p className="font-bold text-lg">{conf.subject}</p>
                 <p className="text-sm text-gray-500">
-                  Створено: {new Date(conf.createdAt).toLocaleString('uk-UA')} | Учасників: {conf.participants.length}
+                  Створено: {new Date(conf.createdAt).toLocaleString('uk-UA')} | Учасників: {conf.participants?.length ?? 0}
                 </p>
               </div>
               <button

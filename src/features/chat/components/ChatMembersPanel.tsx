@@ -4,6 +4,14 @@ import { useAuth } from '../../../context/AuthContext';
 import * as chatApi from '../../../api/chat';
 import type { ChatMember, ChatRole } from '../../../types';
 
+const roleColors = {
+  OWNER: { bg: 'bg-purple-100', text: 'text-purple-700', badge: 'bg-purple-500' },
+  ADMIN: { bg: 'bg-blue-100', text: 'text-blue-700', badge: 'bg-blue-500' },
+  MODERATOR: { bg: 'bg-amber-100', text: 'text-amber-700', badge: 'bg-amber-500' },
+  MEMBER: { bg: 'bg-gray-100', text: 'text-gray-700', badge: 'bg-gray-500' },
+  VIEWER: { bg: 'bg-slate-100', text: 'text-slate-700', badge: 'bg-slate-500' },
+};
+
 export default function ChatMembersPanel() {
   const { selectedChat, setSelectedChat } = useChat();
   const { getUsername } = useAuth();
@@ -12,7 +20,7 @@ export default function ChatMembersPanel() {
   const [editingMember, setEditingMember] = useState<string | null>(null);
   const [newRole, setNewRole] = useState<ChatRole>('MEMBER');
   const [error, setError] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const currentUsername = getUsername();
   const isGroupChat = selectedChat?.type === 'GROUP' || selectedChat?.type === 'COURSE_CHAT';
@@ -49,6 +57,8 @@ export default function ChatMembersPanel() {
       await chatApi.removeChatMember(selectedChat.id, username);
       setMembers(prev => prev.filter(m => m.username !== username));
       setError(null);
+      setSuccess(`${username} has been removed`);
+      setTimeout(() => setSuccess(null), 2000);
     } catch (err) {
       setError('Failed to remove member');
       console.error(err);
@@ -65,6 +75,8 @@ export default function ChatMembersPanel() {
       );
       setEditingMember(null);
       setError(null);
+      setSuccess(`Role updated to ${newRole}`);
+      setTimeout(() => setSuccess(null), 2000);
     } catch (err) {
       setError('Failed to update member role');
       console.error(err);
@@ -89,98 +101,158 @@ export default function ChatMembersPanel() {
     return null;
   }
 
+  const getRoleColor = (role: ChatRole) => roleColors[role] || roleColors.MEMBER;
+  const sortedMembers = [...members].sort((a, b) => {
+    const roleOrder = { OWNER: 0, ADMIN: 1, MODERATOR: 2, MEMBER: 3, VIEWER: 4 };
+    return (roleOrder[a.role] ?? 5) - (roleOrder[b.role] ?? 5);
+  });
+
   return (
-    <div className="border-l border-gray-200 w-80 flex flex-col">
-      <div className="p-4 border-b flex justify-between items-center">
-        <h3 className="font-semibold text-lg">Members ({members.length})</h3>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          {isOpen ? '✕' : '☰'}
-        </button>
-      </div>
-
-      {isOpen && (
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {error && <div className="bg-red-100 text-red-700 p-2 rounded text-sm">{error}</div>}
-
-          {isLoading ? (
-            <div className="text-center text-gray-500">Loading members...</div>
-          ) : (
-            members.map(member => (
-              <div key={member.username} className="flex items-center justify-between p-2 rounded hover:bg-gray-100">
-                <div className="flex-1">
-                  <p className="font-medium text-sm">{member.username}</p>
-                  <p className="text-xs text-gray-500">
-                    {editingMember === member.username ? (
-                      <select
-                        value={newRole}
-                        onChange={(e) => setNewRole(e.target.value as ChatRole)}
-                        className="text-xs p-1 border rounded"
-                      >
-                        <option value="MEMBER">Member</option>
-                        <option value="MODERATOR">Moderator</option>
-                        <option value="ADMIN">Admin</option>
-                      </select>
-                    ) : (
-                      <span>{member.role}</span>
-                    )}
-                  </p>
-                </div>
-
-                {isAdmin && member.username !== currentUsername && (
-                  <div className="flex space-x-1">
-                    {editingMember === member.username ? (
-                      <>
-                        <button
-                          onClick={() => handleUpdateRole(member.username)}
-                          className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={() => setEditingMember(null)}
-                          className="text-xs bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600"
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => {
-                            setEditingMember(member.username);
-                            setNewRole(member.role);
-                          }}
-                          className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleRemoveMember(member.username)}
-                          className="text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                        >
-                          Remove
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-
-          <div className="pt-4 border-t">
-            <button
-              onClick={handleLeaveChat}
-              className="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600 text-sm font-medium"
-            >
-              Leave Chat
-            </button>
+    <div className="w-80 rounded-xl bg-white border border-gray-100 shadow-sm flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3a6 6 0 016-6h6a6 6 0 016 6h-12zm0 0a6 6 0 016-6h-6a6 6 0 00-6 6m12 0h-12" />
+              </svg>
+              Members
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">{members.length} {members.length === 1 ? 'member' : 'members'}</p>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto">
+        {error && (
+          <div className="mx-4 mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-2">
+            <span className="text-lg mt-0.5">⚠️</span>
+            <span>{error}</span>
+          </div>
+        )}
+
+        {success && (
+          <div className="mx-4 mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-start gap-2">
+            <span className="text-lg mt-0.5">✓</span>
+            <span>{success}</span>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+            <p className="text-gray-500 text-sm">Loading members...</p>
+          </div>
+        ) : (
+          <div className="p-4 space-y-2">
+            {sortedMembers.map(member => {
+              const colors = getRoleColor(member.role);
+              const isCurrentUser = member.username === currentUsername;
+              
+              return (
+                <div key={member.username} className="group">
+                  <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                    {/* Avatar */}
+                    <div className={`w-10 h-10 ${colors.badge} rounded-full flex items-center justify-center flex-shrink-0`}>
+                      <span className="text-white text-sm font-bold">
+                        {member.username.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 text-sm truncate">
+                        {member.username}
+                        {isCurrentUser && (
+                          <span className="ml-2 text-xs font-semibold text-primary">(You)</span>
+                        )}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${colors.bg} ${colors.text}`}>
+                          {member.role === 'OWNER' && '👑'}
+                          {member.role === 'ADMIN' && '⚙️'}
+                          {member.role === 'MODERATOR' && '📋'}
+                          {member.role === 'MEMBER' && '👤'}
+                          {member.role === 'VIEWER' && '👁️'}
+                          {' '}{member.role}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    {isAdmin && !isCurrentUser && (
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {editingMember === member.username ? (
+                          <>
+                            <select
+                              value={newRole}
+                              onChange={(e) => setNewRole(e.target.value as ChatRole)}
+                              className="text-xs px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            >
+                              <option value="MEMBER">Member</option>
+                              <option value="MODERATOR">Moderator</option>
+                              <option value="ADMIN">Admin</option>
+                            </select>
+                            <button
+                              onClick={() => handleUpdateRole(member.username)}
+                              className="text-xs bg-green-500 hover:bg-green-600 text-white px-2.5 py-1 rounded-md transition-colors font-medium"
+                              title="Save"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={() => setEditingMember(null)}
+                              className="text-xs bg-gray-400 hover:bg-gray-500 text-white px-2.5 py-1 rounded-md transition-colors font-medium"
+                              title="Cancel"
+                            >
+                              ✕
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => {
+                                setEditingMember(member.username);
+                                setNewRole(member.role);
+                              }}
+                              className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2.5 py-1 rounded-md transition-colors font-medium"
+                              title="Edit role"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              onClick={() => handleRemoveMember(member.username)}
+                              className="text-xs bg-red-500 hover:bg-red-600 text-white px-2.5 py-1 rounded-md transition-colors font-medium"
+                              title="Remove from chat"
+                            >
+                              ✕
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Leave Chat Button */}
+      <div className="border-t border-gray-200 p-4">
+        <button
+          onClick={handleLeaveChat}
+          className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Leave Chat
+        </button>
+      </div>
     </div>
   );
 }
