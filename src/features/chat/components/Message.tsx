@@ -5,6 +5,7 @@ import { useChat } from '../context/ChatContext';
 import RelatedEntityCard from './RelatedEntityCard';
 import ReactionPicker from './ReactionPicker';
 import webSocketService from '../../../services/websocket';
+import * as chatApi from '../../../api/chat';
 
 // ... (SystemMessage and ReactionsDisplay components remain the same)
 
@@ -118,6 +119,18 @@ export default function Message({ message }: { message: ChatMessage }) {
         }
     };
 
+    const handlePinMessage = async () => {
+        if (selectedChat) {
+            try {
+                // Use the non-WebSocket API for pinning since it's a management action
+                await chatApi.pinMessage(selectedChat.id, { messageId: message.id });
+            } catch (error) {
+                console.error('Failed to pin message:', error);
+                alert('Failed to pin message');
+            }
+        }
+    };
+
     if (message.isDeleted) {
         return (
             <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
@@ -181,6 +194,9 @@ export default function Message({ message }: { message: ChatMessage }) {
                 <div className={`absolute top-0 ${isCurrentUser ? 'left-0 -translate-x-full' : 'right-0 translate-x-full'} p-2 flex opacity-0 group-hover:opacity-100 transition-opacity`}>
                     <button onClick={() => setShowReactionPicker(prev => !prev)} className="p-1 rounded-full hover:bg-gray-200">
                         <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </button>
+                    <button onClick={() => handlePinMessage()} className="p-1 rounded-full hover:bg-gray-200" title="Pin message">
+                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                     </button>
                     {isCurrentUser && (
                         <>

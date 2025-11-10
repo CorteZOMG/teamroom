@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode, useCallback, type Dispatch, type SetStateAction } from 'react';
 import type { UserChatView, ChatMessage, UserMessage, Reaction, ChatDetails } from '../../../types';
 import * as chatApi from '../../../api/chat';
+import webSocketService from '../../../services/websocket';
 
 // Add tempId to ChatMessage for optimistic UI
 export type TempChatMessage = ChatMessage & { tempId?: string };
@@ -58,6 +59,19 @@ interface ChatContextType {
         const chatDetails = await chatApi.getChatDetails(chat.id);
         console.log('Successfully fetched chat details:', chatDetails);
         setSelectedChat(chatDetails);
+        
+        // Mark all messages as read
+        if (webSocketService.isConnected()) {
+          // Get the last message ID to mark as read
+          try {
+            const messages = await chatApi.getMessages(chat.id, { limitBefore: 1 });
+            if (messages.length > 0) {
+              webSocketService.readMessage(chat.id, { lastReadMessageId: messages[0].id });
+            }
+          } catch (err) {
+            console.error('Failed to mark messages as read:', err);
+          }
+        }
       } catch (error) {
         console.error("Failed to fetch chat details:", error);
         setSelectedChat(null); // Reset on error

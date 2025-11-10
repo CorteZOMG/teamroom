@@ -7,3 +7,4 @@ export * from './profile';
 export * from './upload';
 export * from './user';
 export * from './websocket';
+export * from './conference';

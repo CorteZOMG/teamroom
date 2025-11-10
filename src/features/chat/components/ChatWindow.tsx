@@ -5,6 +5,7 @@ import webSocketService from '../../../services/websocket';
 import ChatHeader from './ChatHeader';
 import Message from './Message';
 import MessageInput from './MessageInput';
+import ChatMembersPanel from './ChatMembersPanel';
 
 export default function ChatWindow() {
             const { 
@@ -134,21 +135,26 @@ export default function ChatWindow() {
         }
         
             return (
-                <div className="flex-1 flex flex-col overflow-x-hidden">
+                <div className="flex-1 flex flex-col overflow-x-hidden relative">
                     <ChatHeader />
-                    <div ref={messageContainerRef} onScroll={handleScroll} className="flex-1 p-4 overflow-y-auto">
-                        {isLoading && messages.length === 0 && <div className="text-center">Loading messages...</div>}
-                        {messages.map(msg => (
-                            <Message key={msg.tempId || msg.id} message={msg} />
-                        ))}
+                    <div className="flex flex-1 overflow-hidden">
+                        <div className="flex-1 flex flex-col overflow-x-hidden">
+                            <div ref={messageContainerRef} onScroll={handleScroll} className="flex-1 p-4 overflow-y-auto">
+                                {isLoading && messages.length === 0 && <div className="text-center">Loading messages...</div>}
+                                {messages.map(msg => (
+                                    <Message key={msg.tempId || msg.id} message={msg} />
+                                ))}
+                            </div>
+                            <div className="h-6 px-4">
+                                {typingUsers.length > 0 && (
+                                    <p className="text-gray-500 text-sm">
+                                        {typingUsers.join(', ')} {typingUsers.length > 1 ? 'are' : 'is'} typing...
+                                    </p>
+                                )}
+                            </div>
+                            <MessageInput />
+                        </div>
+                        <ChatMembersPanel />
                     </div>
-                    <div className="h-6 px-4">
-                        {typingUsers.length > 0 && (
-                            <p className="text-gray-500 text-sm">
-                                {typingUsers.join(', ')} {typingUsers.length > 1 ? 'are' : 'is'} typing...
-                            </p>
-                        )}
-                    </div>
-                    <MessageInput />
                 </div>
             );    }

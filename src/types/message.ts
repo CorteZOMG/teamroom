@@ -81,7 +81,7 @@ export interface AssignmentContent {
 
 // From GET /api/chats/{chatId}/pinned
 export interface PinnedMessage {
-    id: number;
+    messageId: number;
     chatId: number;
     username: string | null;
     content: string | null;
