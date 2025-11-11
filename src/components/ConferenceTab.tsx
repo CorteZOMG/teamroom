@@ -123,14 +123,16 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
             iframeRef.style.height = '100%';
             iframeRef.style.width = '100%';
             // Add subject to the iframe URL hash
-            const iframe = iframeRef.querySelector('iframe') as HTMLIFrameElement;
-            if (iframe && iframe.src && jitsiConfig.subject) {
-              const url = new URL(iframe.src);
-              const hash = new URLSearchParams(url.hash.substring(1));
-              hash.set('config.subject', jitsiConfig.subject);
-              url.hash = hash.toString();
-              iframe.src = url.toString();
-            }
+            setTimeout(() => {
+              const iframe = iframeRef.querySelector('iframe') as HTMLIFrameElement;
+              if (iframe && iframe.src && jitsiConfig.subject) {
+                const url = new URL(iframe.src);
+                // Remove existing hash if any
+                const baseUrl = url.href.split('#')[0];
+                // Append the subject config to the hash
+                iframe.src = `${baseUrl}#config.subject="${encodeURIComponent(jitsiConfig.subject)}"`;
+              }
+            }, 100);
           }}
         />
       </div>
