@@ -22,6 +22,7 @@ export interface Conference {
 export interface CreateConferenceResponse {
   jwt: string;
   roomName: string;
+  subject: string;
   role: ConferenceRole;
 }
 

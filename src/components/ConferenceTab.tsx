@@ -32,8 +32,7 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
     }
     try {
       setActionError(null);
-      const subject = newConferenceSubject; // Capture the value
-      const { jwt, role } = await createConference(courseId, subject);
+      const { jwt, roomName, subject, role } = await createConference(courseId, newConferenceSubject);
        
        let waitMs = 1500;
        try {
@@ -47,12 +46,12 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
        }
        
        setTimeout(() => {
-         setJitsiConfig({ jwt, roomName: subject, subject, role });
+         setJitsiConfig({ jwt, roomName, subject, role });
        }, waitMs);
-       
-       setShowCreateModal(false);
-       setNewConferenceSubject('');
-       refreshConferences();
+      
+      setShowCreateModal(false);
+      setNewConferenceSubject('');
+      refreshConferences();
     } catch (err) {
       setActionError('Не вдалося створити конференцію.');
       console.error(err);
@@ -62,7 +61,7 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
   const handleJoinConference = async (conf: Conference) => {
     try {
        setActionError(null);
-       const { jwt, role } = await joinConference(courseId, conf.id);
+       const { jwt, roomName, subject, role } = await joinConference(courseId, conf.id);
        
        let waitMs = 1500;
        try {
@@ -76,7 +75,7 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
        }
        
        setTimeout(() => {
-         setJitsiConfig({ jwt, roomName: conf.subject, subject: conf.subject, role });
+         setJitsiConfig({ jwt, roomName, subject, role });
        }, waitMs);
     } catch (err) {
       setActionError('Не вдалося приєднатися до конференції.');
