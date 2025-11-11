@@ -48,8 +48,8 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
        setTimeout(() => {
          setJitsiConfig({ jwt, roomName, subject, role });
        }, waitMs);
-      
-      setShowCreateModal(false);
+       
+       setShowCreateModal(false);
       setNewConferenceSubject('');
       refreshConferences();
     } catch (err) {
@@ -77,8 +77,8 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
        setTimeout(() => {
          setJitsiConfig({ jwt, roomName, subject, role });
        }, waitMs);
-    } catch (err) {
-      setActionError('Не вдалося приєднатися до конференції.');
+       } catch (err) {
+       setActionError('Не вдалося приєднатися до конференції.');
       console.error(err);
     }
   };
@@ -110,7 +110,6 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
             prejoinPageEnabled: true,
             toolbarButtons: isViewer ? ['fullscreen', 'tileview'] : undefined,
             disableSelfView: isViewer,
-            subject: jitsiConfig.subject,
           }}
           interfaceConfigOverwrite={{
             SHOW_JITSI_WATERMARK: false,
@@ -123,6 +122,15 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
           getIFrameRef={(iframeRef) => {
             iframeRef.style.height = '100%';
             iframeRef.style.width = '100%';
+            // Add subject to the iframe URL hash
+            const iframe = iframeRef.querySelector('iframe') as HTMLIFrameElement;
+            if (iframe && iframe.src && jitsiConfig.subject) {
+              const url = new URL(iframe.src);
+              const hash = new URLSearchParams(url.hash.substring(1));
+              hash.set('config.subject', jitsiConfig.subject);
+              url.hash = hash.toString();
+              iframe.src = url.toString();
+            }
           }}
         />
       </div>
