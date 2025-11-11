@@ -32,22 +32,22 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
     }
     try {
       setActionError(null);
-      const { jwt, roomName, role } = await createConference(courseId, newConferenceSubject);
-      
-      let waitMs = 1500;
-      try {
-        const payload = JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-        const now = Math.floor(Date.now() / 1000);
-        const nbfOrIat = payload.nbf || payload.iat || now;
-        const calculatedWait = Math.max(0, (nbfOrIat - now) * 1000 + 500);
-        waitMs = Math.max(1500, calculatedWait);
-      } catch (e) {
-        console.warn('Could not decode JWT, using default delay:', e);
-      }
-      
-      setTimeout(() => {
-        setJitsiConfig({ jwt, roomName, subject: newConferenceSubject, role });
-      }, waitMs);
+      const { jwt, role } = await createConference(courseId, newConferenceSubject);
+       
+       let waitMs = 1500;
+       try {
+         const payload = JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+         const now = Math.floor(Date.now() / 1000);
+         const nbfOrIat = payload.nbf || payload.iat || now;
+         const calculatedWait = Math.max(0, (nbfOrIat - now) * 1000 + 500);
+         waitMs = Math.max(1500, calculatedWait);
+       } catch (e) {
+         console.warn('Could not decode JWT, using default delay:', e);
+       }
+       
+       setTimeout(() => {
+         setJitsiConfig({ jwt, roomName: newConferenceSubject, subject: newConferenceSubject, role });
+       }, waitMs);
       
       setShowCreateModal(false);
       setNewConferenceSubject('');
@@ -60,23 +60,23 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
 
   const handleJoinConference = async (conf: Conference) => {
     try {
-      setActionError(null);
-      const { jwt, roomName, role } = await joinConference(courseId, conf.id);
-      
-      let waitMs = 1500;
-      try {
-        const payload = JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-        const now = Math.floor(Date.now() / 1000);
-        const nbfOrIat = payload.nbf || payload.iat || now;
-        const calculatedWait = Math.max(0, (nbfOrIat - now) * 1000 + 500);
-        waitMs = Math.max(1500, calculatedWait);
-      } catch (e) {
-        console.warn('Could not decode JWT, using default delay:', e);
-      }
-      
-      setTimeout(() => {
-        setJitsiConfig({ jwt, roomName, subject: conf.subject, role });
-      }, waitMs);
+       setActionError(null);
+       const { jwt, role } = await joinConference(courseId, conf.id);
+       
+       let waitMs = 1500;
+       try {
+         const payload = JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+         const now = Math.floor(Date.now() / 1000);
+         const nbfOrIat = payload.nbf || payload.iat || now;
+         const calculatedWait = Math.max(0, (nbfOrIat - now) * 1000 + 500);
+         waitMs = Math.max(1500, calculatedWait);
+       } catch (e) {
+         console.warn('Could not decode JWT, using default delay:', e);
+       }
+       
+       setTimeout(() => {
+         setJitsiConfig({ jwt, roomName: conf.subject, subject: conf.subject, role });
+       }, waitMs);
     } catch (err) {
       setActionError('Не вдалося приєднатися до конференції.');
       console.error(err);
