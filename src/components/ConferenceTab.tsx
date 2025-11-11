@@ -110,6 +110,7 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
             prejoinPageEnabled: true,
             toolbarButtons: isViewer ? ['fullscreen', 'tileview'] : undefined,
             disableSelfView: isViewer,
+            subject: jitsiConfig.subject,
           }}
           interfaceConfigOverwrite={{
             SHOW_JITSI_WATERMARK: false,
