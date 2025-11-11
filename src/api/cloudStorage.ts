@@ -7,6 +7,7 @@ export type FilePurpose =
   | 'profile-photo'
   | 'course-photo'
   | 'material-file'
+  | 'message-file'
   | 'assignment-file'
   | 'assignment-response-file';
 
@@ -208,6 +209,18 @@ export function generateUniqueCoursePhotoName(
 ): string {
   const timestamp = Date.now();
   return `course_${courseId}_${timestamp}.${fileExtension}`;
+}
+
+/**
+ * Generate unique filename for chat photo
+ * Format: chat_{chatId}_{timestamp}.{extension}
+ */
+export function generateUniqueChatPhotoName(
+  chatId: number,
+  fileExtension: string
+): string {
+  const timestamp = Date.now();
+  return `chat_${chatId}_${timestamp}.${fileExtension}`;
 }
 
 /**

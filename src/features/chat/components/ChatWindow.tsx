@@ -7,6 +7,7 @@ import ChatHeader from './ChatHeader';
 import Message from './Message';
 import MessageInput from './MessageInput';
 import ChatMembersPanel from './ChatMembersPanel';
+import PinnedMessageBanner from './PinnedMessageBanner';
 
 export default function ChatWindow() {
     const { 
@@ -27,9 +28,11 @@ export default function ChatWindow() {
     
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const [scrollPosition, setScrollPosition] = useState(0);
     const messageContainerRef = useRef<HTMLDivElement>(null);
     const isFetchingMessages = useRef(false);
     const lastScrollTop = useRef(0);
+    const messageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
     const fetchMessages = async (chatId: number, messageId?: number) => {
         if (isFetchingMessages.current) return;
@@ -108,6 +111,8 @@ export default function ChatWindow() {
     const handleScroll = () => {
         if (messageContainerRef.current) {
             const { scrollTop } = messageContainerRef.current;
+            setScrollPosition(scrollTop);
+            
             if (scrollTop < lastScrollTop.current && scrollTop === 0 && hasMore && selectedChat?.id) {
                 const firstMessageId = messages[0]?.id;
                 if (firstMessageId) {
@@ -115,6 +120,17 @@ export default function ChatWindow() {
                 }
             }
             lastScrollTop.current = scrollTop;
+        }
+    };
+
+    const scrollToMessage = (messageId: number) => {
+        const messageElement = messageRefs.current.get(messageId);
+        if (messageElement) {
+            messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            messageElement.classList.add('highlight-message');
+            setTimeout(() => {
+                messageElement.classList.remove('highlight-message');
+            }, 2000);
         }
     };
 
@@ -150,6 +166,15 @@ export default function ChatWindow() {
             <ChatHeader />
             <div className="flex flex-1 overflow-hidden gap-4 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-4">
                 <div className="flex-1 flex flex-col overflow-hidden bg-white rounded-xl shadow-sm border border-gray-100">
+                    {/* Pinned Message Banner */}
+                    {selectedChat?.id && (
+                        <PinnedMessageBanner 
+                            chatId={selectedChat.id} 
+                            onMessageClick={scrollToMessage}
+                            scrollPosition={scrollPosition}
+                        />
+                    )}
+                    
                     {/* Messages Container */}
                     <div 
                         ref={messageContainerRef} 
@@ -170,7 +195,16 @@ export default function ChatWindow() {
                             </div>
                         )}
                         {messages.map(msg => (
-                            <Message key={msg.tempId || msg.id} message={msg} />
+                            <div 
+                                key={msg.tempId || msg.id} 
+                                ref={(el) => {
+                                    if (el && msg.id) {
+                                        messageRefs.current.set(msg.id, el);
+                                    }
+                                }}
+                            >
+                                <Message message={msg} />
+                            </div>
                         ))}
                     </div>
 

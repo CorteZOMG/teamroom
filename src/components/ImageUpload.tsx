@@ -149,7 +149,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           <img
             src={preview}
             alt="Preview"
-            className="w-32 h-32 rounded-full object-cover border-2 border-gray-300"
+            className="w-32 h-32 rounded-full object-contain border-2 border-gray-300"
             onError={() => {
               console.error('Failed to load image:', preview);
               setPreview(null);

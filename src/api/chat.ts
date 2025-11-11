@@ -3,6 +3,7 @@ import type {
   UserChatView,
   CreateGroupChatRequest,
   ChatDetails,
+  ChatDetailsRaw,
   UpdateChatRequest,
   PatchChatRequest,
   ChatMember,
@@ -30,7 +31,18 @@ export async function createGroupChat(data: CreateGroupChatRequest): Promise<{ c
 
 // GET /api/chats/{chatId}
 export async function getChatDetails(chatId: number): Promise<ChatDetails> {
-  return apiFetch<ChatDetails>(`/api/chats/${chatId}`);
+  const raw = await apiFetch<ChatDetailsRaw>(`/api/chats/${chatId}`);
+  // Normalize: map currentUserInfo.role to top-level role
+  return {
+    id: raw.id,
+    name: raw.name,
+    type: raw.type,
+    photoUrl: raw.photoUrl,
+    courseId: raw.courseId,
+    members: raw.members,
+    role: raw.currentUserInfo.role,
+    lastReadMessageId: raw.currentUserInfo.lastReadMessageId,
+  };
 }
 
 // PUT /api/chats/{chatId}

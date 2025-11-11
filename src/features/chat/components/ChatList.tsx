@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useChat } from '../context/ChatContext';
 import * as chatApi from '../../../api/chat';
+import { getThumbnailLink } from '../../../api/cloudStorage';
 import CreateChatModal from './CreateChatModal';
 
 export default function ChatList() {
@@ -72,18 +73,18 @@ export default function ChatList() {
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
-                      {chat.photoUrl ? (
-                        <img
-                          src={chat.photoUrl}
-                          alt={chat.name || 'Chat'}
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-gray-600 font-bold">
-                          {((chat.name || 'C')).charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
+                       {chat.photoUrl ? (
+                         <img
+                           src={chat.photoUrl.includes('pcloud.link') ? getThumbnailLink(chat.photoUrl) : chat.photoUrl}
+                           alt={chat.name || 'Chat'}
+                           className="w-full h-full rounded-full object-cover"
+                         />
+                       ) : (
+                         <span className="text-gray-600 font-bold">
+                           {((chat.name || 'C')).charAt(0).toUpperCase()}
+                         </span>
+                       )}
+                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium truncate font-montserrat">
                         {chat.name || 'Chat'}

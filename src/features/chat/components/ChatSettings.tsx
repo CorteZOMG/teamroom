@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useChat } from '../context/ChatContext';
 import * as chatApi from '../../../api/chat';
+import { ImageUpload } from '../../../components/ImageUpload';
+import { generateUniqueChatPhotoName } from '../../../api/cloudStorage';
 
 export default function ChatSettings() {
     const { selectedChat, setSelectedChat } = useChat();
@@ -8,13 +10,17 @@ export default function ChatSettings() {
     const [chatName, setChatName] = useState(selectedChat?.name || '');
     const [photoUrl, setPhotoUrl] = useState(selectedChat?.photoUrl || '');
     const [isEditing, setIsEditing] = useState(false);
-    const [transferUsername, setTransferUsername] = useState('');
-    const [isTransferring, setIsTransferring] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [isClearingChat, setIsClearingChat] = useState(false);
-    const [clearForBoth, setClearForBoth] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+
+    // Update local state when selectedChat changes
+    useEffect(() => {
+        if (selectedChat) {
+            setChatName(selectedChat.name || '');
+            setPhotoUrl(selectedChat.photoUrl || '');
+        }
+    }, [selectedChat]);
 
     if (!selectedChat) {
         return null;
@@ -22,8 +28,16 @@ export default function ChatSettings() {
 
     const isOwner = selectedChat.role === 'OWNER';
     const isAdmin = selectedChat.role === 'ADMIN' || isOwner;
-    const isPrivateChat = selectedChat.type === 'PRIVATE';
     const isGroupChat = selectedChat.type === 'GROUP' || selectedChat.type === 'COURSE_CHAT';
+    
+    console.log('ChatSettings Debug:', {
+        chatId: selectedChat.id,
+        chatType: selectedChat.type,
+        userRole: selectedChat.role,
+        isGroupChat,
+        isAdmin,
+        isOwner,
+    });
 
     const handleUpdateChat = async () => {
         if (!selectedChat.id) return;
@@ -33,42 +47,21 @@ export default function ChatSettings() {
                 name: chatName,
                 photoUrl: photoUrl,
             });
-            setSelectedChat(null);
-            setTimeout(() => setSelectedChat(null), 0);
+            // Refresh the chat details by re-fetching with updated values
+            await setSelectedChat({
+                id: selectedChat.id,
+                name: chatName,
+                type: selectedChat.type,
+                role: selectedChat.role,
+                photoUrl: photoUrl,
+                lastReadMessageId: selectedChat.lastReadMessageId,
+            });
             setIsEditing(false);
             setSuccess('Chat updated successfully');
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             setError('Failed to update chat');
             console.error(err);
-        }
-    };
-
-    const handleTransferOwnership = async () => {
-        if (!selectedChat.id || !transferUsername.trim()) {
-            setError('Please enter a username');
-            return;
-        }
-
-        if (!window.confirm(`Transfer ownership to ${transferUsername}?`)) return;
-
-        setIsTransferring(true);
-        try {
-            await chatApi.transferChatOwnership(selectedChat.id, {
-                newOwnerUsername: transferUsername,
-            });
-            setTransferUsername('');
-            setSuccess('Ownership transferred successfully');
-            setIsOpen(false);
-            setTimeout(() => setSuccess(null), 3000);
-            await chatApi.getChatDetails(selectedChat.id);
-            setSelectedChat(null);
-            setTimeout(() => setSelectedChat(null), 0);
-        } catch (err) {
-            setError('Failed to transfer ownership');
-            console.error(err);
-        } finally {
-            setIsTransferring(false);
         }
     };
 
@@ -86,25 +79,6 @@ export default function ChatSettings() {
             console.error(err);
         } finally {
             setIsDeleting(false);
-        }
-    };
-
-    const handleClearChat = async () => {
-        if (!selectedChat.id || !isPrivateChat) return;
-
-        if (!window.confirm('Clear chat history? This cannot be undone.')) return;
-
-        setIsClearingChat(true);
-        try {
-            await chatApi.clearPrivateChat(selectedChat.id, clearForBoth);
-            setSuccess('Chat cleared successfully');
-            setTimeout(() => setSuccess(null), 3000);
-        } catch (err: any) {
-            const errorMsg = err?.message || 'Failed to clear chat';
-            setError(`Error: ${errorMsg}`);
-            console.error('Clear chat error:', err);
-        } finally {
-            setIsClearingChat(false);
         }
     };
 
@@ -165,6 +139,13 @@ export default function ChatSettings() {
                                 </div>
                             )}
 
+                            {/* Private Chat Notice */}
+                            {!isGroupChat && (
+                                <div className="p-4 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm">
+                                    <p>This is a private chat. No settings available to manage.</p>
+                                </div>
+                            )}
+
                             {/* Edit Chat Info */}
                             {isAdmin && isGroupChat && (
                                 <div className="space-y-3">
@@ -187,27 +168,32 @@ export default function ChatSettings() {
                                         </button>
                                     ) : (
                                         <div className="space-y-3">
-                                            <div>
-                                                <label className="text-xs font-medium text-gray-700 block mb-1.5">Chat Name</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Enter chat name"
-                                                    value={chatName}
-                                                    onChange={(e) => setChatName(e.target.value)}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-xs font-medium text-gray-700 block mb-1.5">Photo URL</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Enter photo URL"
-                                                    value={photoUrl}
-                                                    onChange={(e) => setPhotoUrl(e.target.value)}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-                                            <div className="flex gap-2">
+                                                 <div>
+                                                     <label className="text-xs font-medium text-gray-700 block mb-1.5">Chat Name</label>
+                                                     <input
+                                                         type="text"
+                                                         placeholder="Enter chat name"
+                                                         value={chatName}
+                                                         onChange={(e) => setChatName(e.target.value)}
+                                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                     />
+                                                 </div>
+                                                 <div>
+                                                     <label className="text-xs font-medium text-gray-700 block mb-1.5">Chat Photo</label>
+                                                     <ImageUpload
+                                                         purpose="message-file"
+                                                         generateUniqueFileName={(file) => {
+                                                             const extension = file.name.split('.').pop() || 'jpg';
+                                                             return generateUniqueChatPhotoName(selectedChat.id, extension);
+                                                         }}
+                                                         onUploadComplete={(publicLink) => setPhotoUrl(publicLink)}
+                                                         currentImageUrl={photoUrl}
+                                                         maxSizeMB={5}
+                                                         acceptedFormats={['image/jpeg', 'image/png', 'image/jpg', 'image/webp']}
+                                                         className="flex justify-center"
+                                                     />
+                                                 </div>
+                                                 <div className="flex gap-2">
                                                 <button
                                                     onClick={handleUpdateChat}
                                                     className="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg font-medium text-sm transition-colors"
@@ -223,76 +209,6 @@ export default function ChatSettings() {
                                             </div>
                                         </div>
                                     )}
-                                </div>
-                            )}
-
-                            {/* Divider */}
-                            {isAdmin && isGroupChat && isOwner && (
-                                <div className="border-t border-gray-200"></div>
-                            )}
-
-                            {/* Transfer Ownership */}
-                            {isOwner && isGroupChat && (
-                                <div className="space-y-3">
-                                    <h4 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                        </svg>
-                                        Transfer Ownership
-                                    </h4>
-                                    <input
-                                        type="text"
-                                        placeholder="Enter username"
-                                        value={transferUsername}
-                                        onChange={(e) => setTransferUsername(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                                    />
-                                    <button
-                                        onClick={handleTransferOwnership}
-                                        disabled={isTransferring}
-                                        className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-400 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                        </svg>
-                                        {isTransferring ? 'Transferring...' : 'Transfer'}
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* Divider */}
-                            {isPrivateChat && (
-                                <div className="border-t border-gray-200"></div>
-                            )}
-
-                            {/* Clear Private Chat */}
-                            {isPrivateChat && (
-                                <div className="space-y-3">
-                                    <h4 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        Clear Chat History
-                                    </h4>
-                                    <label className="flex items-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                                        <input
-                                            type="checkbox"
-                                            checked={clearForBoth}
-                                            onChange={(e) => setClearForBoth(e.target.checked)}
-                                            className="w-4 h-4 text-orange-500 rounded border-gray-300 focus:ring-orange-500 cursor-pointer"
-                                        />
-                                        <span className="ml-3 text-sm text-gray-700 font-medium">Clear for both participants</span>
-                                    </label>
-                                    <button
-                                        onClick={handleClearChat}
-                                        disabled={isClearingChat}
-                                        className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        {isClearingChat ? 'Clearing...' : 'Clear History'}
-                                    </button>
                                 </div>
                             )}
 

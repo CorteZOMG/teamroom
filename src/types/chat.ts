@@ -43,7 +43,25 @@ export interface UserChatView {
   lastReadMessageId?: number;
 }
 
+// User info in chat (from currentUserInfo)
+export interface CurrentUserChatInfo {
+    role: ChatRole;
+    joinedAt: string;
+    lastReadMessageId?: number;
+}
+
 // From GET /api/chats/{chatId}
+export interface ChatDetailsRaw {
+    id: number;
+    name: string;
+    type: ChatType;
+    photoUrl?: string;
+    courseId?: number;
+    members?: ChatMember[];
+    currentUserInfo: CurrentUserChatInfo;
+}
+
+// Normalized ChatDetails (what we use in the app)
 export interface ChatDetails extends UserChatView {
     members?: ChatMember[];
     courseId?: number;

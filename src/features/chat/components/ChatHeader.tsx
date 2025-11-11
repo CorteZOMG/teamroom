@@ -2,6 +2,7 @@ import { useChat } from '../context/ChatContext';
 import type { ChatMember } from '../../../types';
 import { useEffect, useState } from 'react';
 import * as chatApi from '../../../api/chat';
+import { getThumbnailLink } from '../../../api/cloudStorage';
 import ChatSettings from './ChatSettings';
 import PinnedMessages from './PinnedMessages';
 
@@ -33,7 +34,7 @@ export default function ChatHeader() {
                         <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center shadow-md overflow-hidden ring-2 ring-white">
                             {selectedChat.photoUrl ? (
                                 <img
-                                    src={selectedChat.photoUrl}
+                                    src={selectedChat.photoUrl.includes('pcloud.link') ? getThumbnailLink(selectedChat.photoUrl) : selectedChat.photoUrl}
                                     alt={selectedChat.name || 'Chat'}
                                     className="w-full h-full object-cover"
                                 />
