@@ -117,6 +117,7 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
             SHOW_POWERED_BY: false,
           }}
           onApiReady={(api) => {
+            api.executeCommand('subject', jitsiConfig.subject);
             api.on('videoConferenceLeft', handleMeetingEnd);
           }}
           getIFrameRef={(iframeRef) => {
