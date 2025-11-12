@@ -60,7 +60,7 @@ export default function MessengerPage() {
   if (authLoading) {
     return (
       <div className="w-screen h-screen flex items-center justify-center bg-white">
-        <div className="text-primary text-2xl font-montserrat">Loading...</div>
+        <div className="text-primary text-2xl font-montserrat">Завантаження...</div>
       </div>
     );
   }

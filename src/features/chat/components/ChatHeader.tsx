@@ -24,6 +24,7 @@ export default function ChatHeader() {
 
     const memberCount = selectedChat.type === 'PRIVATE' ? 2 : members.length;
     const isGroupChat = selectedChat.type === 'GROUP' || selectedChat.type === 'COURSE_CHAT' || selectedChat.type === 'MAIN_COURSE_CHAT';
+    const showMemberCount = selectedChat.type !== 'MAIN_COURSE_CHAT';
 
     return (
         <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
@@ -54,19 +55,21 @@ export default function ChatHeader() {
                         <h2 className="text-xl font-bold text-gray-900 font-montserrat">
                             {selectedChat.name || 'Chat'}
                         </h2>
-                        <p className="text-sm text-gray-500 font-medium">
-                            {isGroupChat ? (
-                                <span className="flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                                    {memberCount} {memberCount === 1 ? 'member' : 'members'}
-                                </span>
-                            ) : (
-                                <span className="flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                                    Private chat
-                                </span>
-                            )}
-                        </p>
+                        {showMemberCount && (
+                            <p className="text-sm text-gray-500 font-medium">
+                                {isGroupChat ? (
+                                    <span className="flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                        {memberCount} {memberCount === 1 ? 'член' : 'членів'}
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                        Приватний чат
+                                    </span>
+                                )}
+                            </p>
+                        )}
                     </div>
                 </div>
 

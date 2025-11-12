@@ -121,14 +121,14 @@ export default function MessageInput() {
                     <button
                         onClick={() => setIsModalOpen(true)}
                         className="bg-gray-200 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-300 transition-colors"
-                        title="Attach course content"
+                        title="Додати вміст курсу"
                     >
                         📎
                     </button>
                 )}
                 <input
                     type="text"
-                    placeholder="Type a message..."
+                    placeholder="Введіть повідомлення..."
                     className={`flex-1 p-2 border rounded-l-md ${!isCourseChat ? 'rounded-l-md' : ''}`}
                     value={message}
                     onChange={handleTyping}
@@ -138,7 +138,7 @@ export default function MessageInput() {
                     onClick={handleSendMessage}
                     className="bg-primary text-white px-3 py-2 rounded-r-md hover:bg-primary-dark transition-colors"
                 >
-                    Send
+                    Надіслати
                 </button>
             </div>
 

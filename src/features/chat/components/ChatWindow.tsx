@@ -139,7 +139,7 @@ export default function ChatWindow() {
             <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                    <div className="text-lg font-montserrat text-gray-600">Loading chat...</div>
+                    <div className="text-lg font-montserrat text-gray-600">Завантаження чату...</div>
                 </div>
             </div>
         );
@@ -151,10 +151,10 @@ export default function ChatWindow() {
                 <div className="text-center">
                     <div className="text-6xl mb-4 animate-bounce">💬</div>
                     <h2 className="text-2xl font-bold mb-2 font-montserrat text-gray-800">
-                        Select a chat
+                        Виберіть чат
                     </h2>
                     <p className="font-montserrat text-gray-500">
-                        Choose a chat from the list to start messaging.
+                        Виберіть чат зі списку, щоб розпочати спілкування.
                     </p>
                 </div>
             </div>
@@ -163,7 +163,10 @@ export default function ChatWindow() {
 
     return (
         <div className="flex-1 flex flex-col bg-white overflow-hidden">
-            <ChatHeader />
+            {/* Hide header for Main Course Chat (Feed) to take full space */}
+            {selectedChat?.type !== 'MAIN_COURSE_CHAT' && (
+                <ChatHeader />
+            )}
             <div className="flex flex-1 overflow-hidden gap-4 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-4">
                 <div className="flex-1 flex flex-col overflow-hidden bg-white rounded-xl shadow-sm border border-gray-100">
                     {/* Pinned Message Banner */}
@@ -183,14 +186,14 @@ export default function ChatWindow() {
                     >
                         {isLoading && messages.length === 0 && (
                             <div className="flex justify-center py-8">
-                                <div className="text-gray-500 text-sm">Loading messages...</div>
+                                <div className="text-gray-500 text-sm">Завантаження повідомлень...</div>
                             </div>
                         )}
                         {messages.length === 0 && !isLoading && (
                             <div className="flex justify-center items-center h-full text-gray-400">
                                 <div className="text-center">
                                     <div className="text-3xl mb-2">👋</div>
-                                    <p className="text-sm">No messages yet. Start the conversation!</p>
+                                    <p className="text-sm">Поки немає повідомлень. Розпочніть розмову!</p>
                                 </div>
                             </div>
                         )}
@@ -213,7 +216,7 @@ export default function ChatWindow() {
                         <div className="px-6 py-2 border-t border-gray-100">
                             <p className="text-gray-500 text-xs font-medium">
                                 <span className="inline-flex items-center gap-1">
-                                    <span>{typingUsers.join(', ')} {typingUsers.length > 1 ? 'are' : 'is'} typing</span>
+                                    <span>{typingUsers.join(', ')} {typingUsers.length > 1 ? 'пишуть' : 'пише'}</span>
                                     <span className="flex gap-1">
                                         <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span>
                                         <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
@@ -228,8 +231,10 @@ export default function ChatWindow() {
                     <MessageInput />
                 </div>
 
-                {/* Members Panel */}
-                <ChatMembersPanel />
+                {/* Members Panel - Hidden for Main Course Chat (Feed) */}
+                {selectedChat?.type !== 'MAIN_COURSE_CHAT' && (
+                    <ChatMembersPanel />
+                )}
             </div>
         </div>
     );

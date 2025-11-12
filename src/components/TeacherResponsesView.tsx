@@ -66,7 +66,7 @@ export default function TeacherResponsesView({ assignment, courseId }: TeacherRe
   };
 
   const handleCancelGrade = async (responseId: number) => {
-    if (window.confirm('Are you sure you want to cancel the grade for this response?')) {
+    if (window.confirm('Ви впевнені, що хочете скасувати оцінку для цієї відповіді?')) {
       try {
         await cancelGrade(courseId, assignment.id, responseId);
         await loadResponses();
@@ -78,7 +78,7 @@ export default function TeacherResponsesView({ assignment, courseId }: TeacherRe
   };
 
   const handleCancelReturn = async (responseId: number) => {
-    if (window.confirm('Are you sure you want to cancel the return for this response?')) {
+    if (window.confirm('Ви впевнені, що хочете скасувати повернення для цієї відповіді?')) {
       try {
         await cancelReturn(courseId, assignment.id, responseId);
         await loadResponses();

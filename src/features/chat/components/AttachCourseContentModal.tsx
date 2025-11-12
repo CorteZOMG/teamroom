@@ -47,7 +47,7 @@ export default function AttachCourseContentModal({
       setMaterials(materialsData);
       setConferences(conferencesRes);
     } catch (err) {
-      setError('Failed to load course content');
+      setError('Помилка при завантаженні вмісту курсу');
       console.error(err);
     } finally {
       setLoading(false);
@@ -86,7 +86,7 @@ export default function AttachCourseContentModal({
         {/* Header */}
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-lg font-bold text-gray-900 font-montserrat">
-            Attach Course Content
+            Додати вміст курсу
           </h2>
           <button
             onClick={onClose}
@@ -106,7 +106,7 @@ export default function AttachCourseContentModal({
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            Assignments
+            Завдання
           </button>
           <button
             onClick={() => setActiveTab('MATERIAL')}
@@ -116,7 +116,7 @@ export default function AttachCourseContentModal({
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            Materials
+            Матеріали
           </button>
           <button
             onClick={() => setActiveTab('CONFERENCE')}
@@ -126,20 +126,20 @@ export default function AttachCourseContentModal({
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            Conferences
+            Конференції
           </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {loading ? (
-            <div className="text-center text-gray-500 py-8">Loading content...</div>
+            <div className="text-center text-gray-500 py-8">Завантаження вмісту...</div>
           ) : error ? (
             <div className="text-center text-red-500 py-8">{error}</div>
           ) : activeTab === 'ASSIGNMENT' ? (
             <div className="space-y-2">
               {assignments.length === 0 ? (
-                <p className="text-gray-500">No assignments available</p>
+                <p className="text-gray-500">Немає доступних завдань</p>
               ) : (
                 assignments.map((assignment) => (
                   <label
@@ -164,7 +164,7 @@ export default function AttachCourseContentModal({
           ) : activeTab === 'MATERIAL' ? (
             <div className="space-y-2">
               {materials.length === 0 ? (
-                <p className="text-gray-500">No materials available</p>
+                <p className="text-gray-500">Немає доступних матеріалів</p>
               ) : (
                 materials.map((material) => (
                   <label
@@ -189,7 +189,7 @@ export default function AttachCourseContentModal({
           ) : (
             <div className="space-y-2">
               {conferences.length === 0 ? (
-                <p className="text-gray-500">No conferences available</p>
+                <p className="text-gray-500">Немає доступних конференцій</p>
               ) : (
                 conferences.map((conference) => (
                   <label
@@ -207,7 +207,7 @@ export default function AttachCourseContentModal({
                     <div className="ml-3 flex-1 font-montserrat">
                       <p>{conference.subject}</p>
                       <p className="text-xs text-gray-500">
-                        {conference.status === 'ACTIVE' ? '🟢 Active' : '🔴 Ended'}
+                        {conference.status === 'ACTIVE' ? '🟢 Активна' : '🔴 Завершена'}
                       </p>
                     </div>
                   </label>
@@ -223,14 +223,14 @@ export default function AttachCourseContentModal({
             onClick={onClose}
             className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 font-montserrat transition-colors"
           >
-            Cancel
+            Скасувати
           </button>
           <button
             onClick={handleAttach}
             disabled={selectedEntities.length === 0}
             className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:bg-gray-400 font-montserrat transition-colors"
           >
-            Attach ({selectedEntities.length})
+            Додати ({selectedEntities.length})
           </button>
         </div>
       </div>

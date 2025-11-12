@@ -316,7 +316,7 @@ export default function ProfileCreation() {
                 onClick={handleCancel}
                 className="fixed top-2 left-2 sm:top-3 sm:left-3 lg:top-4 lg:left-4 w-9 h-9 sm:w-10 sm:h-10 lg:w-14 lg:h-14 flex items-center justify-center cursor-pointer bg-white/20 hover:bg-white/30 rounded-full transition-colors duration-200 z-[9999] backdrop-blur-sm shadow-lg border border-white/30"
             >
-                <img src="/assets/arrow.svg" alt="Back" className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-6 lg:h-6" />
+                <img src="/assets/arrow.svg" alt="Назад" className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-6 lg:h-6" />
             </button>
 
             {/* Mobile/Tablet Card Background - ONLY show below lg breakpoint */}

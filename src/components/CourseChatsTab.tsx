@@ -86,7 +86,7 @@ function CourseChatsContent({ courseId, userRole }: CourseChatsTabProps) {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Back to Chats
+          Повернутися до чатів
         </button>
         <ChatWindow />
       </div>
@@ -96,13 +96,13 @@ function CourseChatsContent({ courseId, userRole }: CourseChatsTabProps) {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 font-montserrat">Course Chats</h2>
+        <h2 className="text-2xl font-bold text-gray-900 font-montserrat">Чати курсу</h2>
         {canCreateChat && (
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-montserrat"
           >
-            + New Chat
+            + Новий чат
           </button>
         )}
       </div>
@@ -115,8 +115,8 @@ function CourseChatsContent({ courseId, userRole }: CourseChatsTabProps) {
 
       {chats.length === 0 ? (
         <div className="text-center text-gray-500 py-8">
-          <p className="font-montserrat">No chats yet</p>
-          {canCreateChat && <p className="text-sm mt-2">Create the first chat for this course</p>}
+          <p className="font-montserrat">Поки що немає чатів</p>
+          {canCreateChat && <p className="text-sm mt-2">Створіть перший чат для цього курсу</p>}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -159,14 +159,14 @@ function CourseChatsContent({ courseId, userRole }: CourseChatsTabProps) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-gray-900 mb-4 font-montserrat">
-              Create New Chat
+              Створити новий чат
             </h3>
             <form onSubmit={handleCreateChat}>
               <input
                 type="text"
                 value={chatName}
                 onChange={(e) => setChatName(e.target.value)}
-                placeholder="Chat name"
+                placeholder="Назва чату"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-primary font-montserrat"
               />
               <div className="flex gap-2 justify-end">
@@ -178,14 +178,14 @@ function CourseChatsContent({ courseId, userRole }: CourseChatsTabProps) {
                   }}
                   className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-montserrat"
                 >
-                  Cancel
+                  Скасувати
                 </button>
                 <button
                   type="submit"
                   disabled={isCreating}
                   className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50 transition-colors font-montserrat"
                 >
-                  {isCreating ? 'Creating...' : 'Create'}
+                  {isCreating ? 'Створення...' : 'Створити'}
                 </button>
               </div>
             </form>

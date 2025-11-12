@@ -56,7 +56,7 @@ export const CloudImage: React.FC<CloudImageProps> = ({
     return (
       <div className={`bg-gray-200 animate-pulse ${className}`}>
         <div className="w-full h-full flex items-center justify-center text-gray-400">
-          <span>Loading...</span>
+          <span>Завантаження...</span>
         </div>
       </div>
     );

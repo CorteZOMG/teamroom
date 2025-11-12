@@ -23,7 +23,7 @@ export default function TransferOwnershipModal({ isOpen, onClose, chatId, member
       onOwnershipTransferred();
       onClose();
     } catch (err) {
-      setError('Failed to transfer ownership.');
+      setError('Помилка при передачі права власності.');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -38,14 +38,14 @@ export default function TransferOwnershipModal({ isOpen, onClose, chatId, member
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-lg font-bold">Transfer Ownership</h2>
+          <h2 className="text-lg font-bold">Передача прав власності</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
             &times;
           </button>
         </div>
         <div className="p-4">
           <div className="space-y-4">
-            <p>Select a new owner for this chat:</p>
+            <p>Виберіть нового власника для цього чату:</p>
             <div className="space-y-2">
               {members
                 .filter((member) => member.role !== 'OWNER')
@@ -63,7 +63,7 @@ export default function TransferOwnershipModal({ isOpen, onClose, chatId, member
             </div>
             {selectedUser && (
               <button onClick={handleTransferOwnership} className="p-2 bg-primary text-white rounded-md" disabled={isLoading}>
-                {isLoading ? 'Transferring...' : `Transfer Ownership to ${selectedUser}`}
+                {isLoading ? 'Передача...' : `Передати права власності ${selectedUser}`}
               </button>
             )}
             {error && <p className="text-red-500">{error}</p>}

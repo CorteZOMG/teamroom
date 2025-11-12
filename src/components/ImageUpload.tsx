@@ -202,7 +202,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         disabled={uploading}
         className="mt-3 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-montserrat"
       >
-        {uploading ? 'Uploading...' : preview ? 'Change Image' : 'Select Image'}
+        {uploading ? 'Завантаження...' : preview ? 'Змінити зображення' : 'Вибрати зображення'}
       </button>
 
       {error && (

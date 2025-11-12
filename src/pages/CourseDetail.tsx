@@ -86,7 +86,7 @@ export default function CourseDetail() {
     };
 
     const handleRemoveMember = async (username: string) => {
-        if (window.confirm(`Are you sure you want to remove ${username} from the course?`)) {
+        if (window.confirm(`Ви впевнені, що хочете видалити ${username} з курсу?`)) {
             if (courseId) {
                 try {
                     await deleteMember(parseInt(courseId), username);
@@ -100,7 +100,7 @@ export default function CourseDetail() {
     };
 
     const handleDeleteCourse = async (courseId: number) => {
-        if (window.confirm('Are you sure you want to delete this course?')) {
+        if (window.confirm('Ви впевнені, що хочете видалити цей курс?')) {
             try {
                 await deleteCourse(courseId);
                 navigate('/courses');

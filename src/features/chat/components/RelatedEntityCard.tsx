@@ -30,7 +30,7 @@ export default function RelatedEntityCard({ entity, courseId }: RelatedEntityCar
                 }
                 setData(result || null);
             } catch (err) {
-                setError('Failed to load entity details.');
+                setError('Помилка при завантаженні деталей сутності.');
                 console.error(err);
             } finally {
                 setLoading(false);
@@ -75,7 +75,7 @@ export default function RelatedEntityCard({ entity, courseId }: RelatedEntityCar
 
     const getConferenceStatusLabel = () => {
         if (!isConference(data)) return '';
-        return data.status === 'ACTIVE' ? '🟢 Active' : '🔴 Ended';
+        return data.status === 'ACTIVE' ? '🟢 Активна' : '🔴 Завершена';
     };
 
     return (
@@ -86,9 +86,9 @@ export default function RelatedEntityCard({ entity, courseId }: RelatedEntityCar
             <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                     <h4 className="font-bold text-sm" style={{color: isConference(data) && data.status === 'ACTIVE' ? '#047857' : isConference(data) ? '#6b7280' : '#1e40af'}}>
-                        {entity.relatedEntityType === 'ASSIGNMENT' && '📝 Assignment'}
-                        {entity.relatedEntityType === 'MATERIAL' && '📚 Material'}
-                        {entity.relatedEntityType === 'CONFERENCE' && '🎥 Conference'}
+                        {entity.relatedEntityType === 'ASSIGNMENT' && '📝 Завдання'}
+                        {entity.relatedEntityType === 'MATERIAL' && '📚 Матеріал'}
+                        {entity.relatedEntityType === 'CONFERENCE' && '🎥 Конференція'}
                     </h4>
                     <p className="text-gray-800 text-sm mt-1">
                         {isAssignment(data) ? data.title : isConference(data) ? data.subject : data.topic}

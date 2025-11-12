@@ -57,11 +57,11 @@ export default function PinnedMessageBanner({ chatId, onMessageClick }: PinnedMe
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-semibold text-blue-700">
-                            Pinned by {currentPin.pinnedByUsername}
+                            Закріплено {currentPin.pinnedByUsername}
                         </span>
                         {pinnedMessages.length > 1 && (
                             <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
-                                {currentPinIndex + 1} of {pinnedMessages.length}
+                                {currentPinIndex + 1} з {pinnedMessages.length}
                             </span>
                         )}
                     </div>
@@ -71,7 +71,7 @@ export default function PinnedMessageBanner({ chatId, onMessageClick }: PinnedMe
                         className="text-sm text-gray-800 hover:text-blue-700 transition-colors text-left w-full truncate"
                     >
                         {currentPin.isDeleted ? (
-                            <span className="italic text-gray-500">This message was deleted</span>
+                            <span className="italic text-gray-500">Це повідомлення було видалено</span>
                         ) : (
                             currentPin.messageContent
                         )}
@@ -86,7 +86,7 @@ export default function PinnedMessageBanner({ chatId, onMessageClick }: PinnedMe
                                     prev > 0 ? prev - 1 : pinnedMessages.length - 1
                                 )}
                                 className="p-1 hover:bg-blue-100 rounded transition-colors"
-                                title="Previous pinned message"
+                                title="Попереднє закріплене повідомлення"
                             >
                                 <span className="text-blue-600 text-xs">←</span>
                             </button>
@@ -95,7 +95,7 @@ export default function PinnedMessageBanner({ chatId, onMessageClick }: PinnedMe
                                     prev < pinnedMessages.length - 1 ? prev + 1 : 0
                                 )}
                                 className="p-1 hover:bg-blue-100 rounded transition-colors"
-                                title="Next pinned message"
+                                title="Наступне закріплене повідомлення"
                             >
                                 <span className="text-blue-600 text-xs">→</span>
                             </button>
@@ -105,7 +105,7 @@ export default function PinnedMessageBanner({ chatId, onMessageClick }: PinnedMe
                     <button
                         onClick={() => handleUnpin(currentPin.messageId)}
                         className="p-1 hover:bg-blue-100 rounded transition-colors"
-                        title="Unpin message"
+                        title="Відкріпити повідомлення"
                     >
                         <X className="w-4 h-4 text-blue-600" />
                     </button>

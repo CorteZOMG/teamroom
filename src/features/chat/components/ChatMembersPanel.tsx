@@ -46,8 +46,8 @@ export default function ChatMembersPanel() {
       const membersList = await chatApi.getChatMembers(selectedChat.id);
       setMembers(membersList);
       setError(null);
-    } catch (err) {
-      setError('Failed to load members');
+      } catch (err) {
+      setError('Помилка при завантаженні членів');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -57,16 +57,16 @@ export default function ChatMembersPanel() {
   const handleRemoveMember = async (username: string) => {
     if (!selectedChat?.id) return;
     
-    if (!window.confirm(`Remove ${username} from chat?`)) return;
+    if (!window.confirm(`Видалити ${username} з чату?`)) return;
 
     try {
       await chatApi.removeChatMember(selectedChat.id, username);
       setMembers(prev => prev.filter(m => m.username !== username));
       setError(null);
-      setSuccess(`${username} has been removed`);
+      setSuccess(`${username} було видалено`);
       setTimeout(() => setSuccess(null), 2000);
     } catch (err) {
-      setError('Failed to remove member');
+      setError('Помилка при видаленні члена');
       console.error(err);
     }
   };
@@ -81,24 +81,24 @@ export default function ChatMembersPanel() {
       );
       setEditingMember(null);
       setError(null);
-      setSuccess(`Role updated to ${newRole}`);
+      setSuccess(`Роль оновлена на ${newRole}`);
       setTimeout(() => setSuccess(null), 2000);
-    } catch (err) {
-      setError('Failed to update member role');
+      } catch (err) {
+      setError('Помилка при оновленні ролі члена');
       console.error(err);
-    }
-  };
+      }
+      };
 
   const handleLeaveChat = async () => {
     if (!selectedChat?.id) return;
 
-    if (!window.confirm('Leave this chat?')) return;
+    if (!window.confirm('Покинути цей чат?')) return;
 
     try {
       await chatApi.leaveChat(selectedChat.id);
       setSelectedChat(null);
     } catch (err) {
-      setError('Failed to leave chat');
+      setError('Помилка при виході з чату');
       console.error(err);
     }
   };
@@ -132,9 +132,9 @@ export default function ChatMembersPanel() {
                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3a6 6 0 016-6h6a6 6 0 016 6h-12zm0 0a6 6 0 016-6h-6a6 6 0 00-6 6m12 0h-12" />
                 </svg>
-                Members
+                Члени
               </h3>
-              <p className="text-xs text-gray-500 mt-0.5">{members.length} {members.length === 1 ? 'member' : 'members'}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{members.length} {members.length === 1 ? 'член' : 'членів'}</p>
             </div>
             {isAdmin && !isCourseChat && (
               <button onClick={() => setIsAddMemberModalOpen(true)} className="p-2 rounded-full hover:bg-gray-200">
@@ -165,7 +165,7 @@ export default function ChatMembersPanel() {
           {isLoading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-              <p className="text-gray-500 text-sm">Loading members...</p>
+              <p className="text-gray-500 text-sm">Завантаження членів...</p>
             </div>
           ) : (
             <div className="p-4 space-y-2">
@@ -188,7 +188,7 @@ export default function ChatMembersPanel() {
                         <p className="font-medium text-gray-900 text-sm truncate">
                           {member.username}
                           {isCurrentUser && (
-                            <span className="ml-2 text-xs font-semibold text-primary">(You)</span>
+                            <span className="ml-2 text-xs font-semibold text-primary">(Ви)</span>
                           )}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
@@ -213,21 +213,21 @@ export default function ChatMembersPanel() {
                                 onChange={(e) => setNewRole(e.target.value as ChatRole)}
                                 className="text-xs px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                               >
-                                <option value="MEMBER">Member</option>
-                                <option value="MODERATOR">Moderator</option>
-                                <option value="ADMIN">Admin</option>
+                                <option value="MEMBER">Член</option>
+                                <option value="MODERATOR">Модератор</option>
+                                <option value="ADMIN">Адміністратор</option>
                               </select>
                               <button
                                 onClick={() => handleUpdateRole(member.username)}
                                 className="text-xs bg-green-500 hover:bg-green-600 text-white px-2.5 py-1 rounded-md transition-colors font-medium"
-                                title="Save"
+                                title="Зберегти"
                               >
                                 ✓
                               </button>
                               <button
                                 onClick={() => setEditingMember(null)}
                                 className="text-xs bg-gray-400 hover:bg-gray-500 text-white px-2.5 py-1 rounded-md transition-colors font-medium"
-                                title="Cancel"
+                                title="Скасувати"
                               >
                                 ✕
                               </button>
@@ -270,7 +270,7 @@ export default function ChatMembersPanel() {
               onClick={() => setIsTransferOwnershipModalOpen(true)}
               className="w-full bg-purple-500 hover:bg-purple-600 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
             >
-              Transfer Ownership
+              Передати право власності
             </button>
           )}
           {!isCourseChat && (
@@ -281,12 +281,12 @@ export default function ChatMembersPanel() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              Leave Chat
+              Покинути чат
             </button>
           )}
           {isCourseChat && (
             <div className="p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs text-center">
-              Members are managed by course enrollment
+              Члени керуються реєстрацією на курс
             </div>
           )}
         </div>

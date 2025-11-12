@@ -26,7 +26,7 @@ export default function AddMemberModal({ isOpen, onClose, chatId, onMemberAdded 
       setSearchResults(results);
       setError(null);
     } catch (err) {
-      setError('Failed to search for users.');
+      setError('Помилка при пошуку користувачів.');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -41,7 +41,7 @@ export default function AddMemberModal({ isOpen, onClose, chatId, onMemberAdded 
       onMemberAdded();
       onClose();
     } catch (err) {
-      setError('Failed to add member.');
+      setError('Помилка при додаванні члена.');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -56,7 +56,7 @@ export default function AddMemberModal({ isOpen, onClose, chatId, onMemberAdded 
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-lg font-bold">Add New Member</h2>
+          <h2 className="text-lg font-bold">Додати нового члена</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
             &times;
           </button>
@@ -68,14 +68,14 @@ export default function AddMemberModal({ isOpen, onClose, chatId, onMemberAdded 
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Enter username"
+                placeholder="Введіть ім'я користувача"
                 className="flex-1 p-2 border border-gray-300 rounded-md"
               />
               <button onClick={handleSearch} className="p-2 bg-primary text-white rounded-md">
-                Search
+                Пошук
               </button>
             </div>
-            {isLoading && <p>Loading...</p>}
+            {isLoading && <p>Завантаження...</p>}
             {error && <p className="text-red-500">{error}</p>}
             <div className="space-y-2">
               {searchResults.map((user) => (
@@ -93,12 +93,12 @@ export default function AddMemberModal({ isOpen, onClose, chatId, onMemberAdded 
             {selectedUser && (
               <div className="flex gap-2 items-center">
                 <select value={role} onChange={(e) => setRole(e.target.value as ChatRole)} className="p-2 border border-gray-300 rounded-md">
-                  <option value="MEMBER">Member</option>
-                  <option value="MODERATOR">Moderator</option>
-                  <option value="ADMIN">Admin</option>
+                  <option value="MEMBER">Член</option>
+                  <option value="MODERATOR">Модератор</option>
+                  <option value="ADMIN">Адміністратор</option>
                 </select>
                 <button onClick={handleAddMember} className="p-2 bg-primary text-white rounded-md">
-                  Add {selectedUser.username}
+                  Додати {selectedUser.username}
                 </button>
               </div>
             )}

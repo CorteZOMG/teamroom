@@ -39,7 +39,7 @@ const UserSearchInput = ({ onSelectUser }: { onSelectUser: (user: UserSearchResu
                 setSearchResults(results);
                 setError(null);
             } catch (err) {
-                setError('Failed to search for users.');
+                setError('Помилка при пошуку користувачів.');
                 console.error(err);
             } finally {
                 setIsLoading(false);
@@ -56,14 +56,14 @@ const UserSearchInput = ({ onSelectUser }: { onSelectUser: (user: UserSearchResu
         <div>
             <input
                 type="text"
-                placeholder="Search for users..."
+                placeholder="Пошук користувачів..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full p-2 border rounded"
             />
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
             <div className="mt-2 max-h-40 overflow-y-auto">
-                {isLoading && <p className="text-sm text-gray-500">Searching...</p>}
+                {isLoading && <p className="text-sm text-gray-500">Пошук...</p>}
                 {searchResults.map(user => (
                     <div 
                         key={user.username} 
@@ -107,7 +107,7 @@ const PrivateChatCreator = ({ onClose }: { onClose: () => void }) => {
             // The websocket notification will handle adding the chat to the list
             onClose();
         } catch (err) {
-            setError('Failed to create chat. The user may not exist or a chat already exists.');
+            setError('Помилка при створенні чату. Користувач може не існувати або чат уже існує.');
             console.error(err);
         } finally {
             setIsCreating(false);
@@ -116,10 +116,10 @@ const PrivateChatCreator = ({ onClose }: { onClose: () => void }) => {
 
     return (
         <div>
-            <p className="text-sm text-gray-600 mb-2">Find a user to start a one-on-one conversation.</p>
+            <p className="text-sm text-gray-600 mb-2">Знайдіть користувача, щоб розпочати одностороннього розмову.</p>
             {error && <p className="text-red-500 text-sm my-2">{error}</p>}
             <UserSearchInput onSelectUser={handleCreatePrivateChat} />
-            {isCreating && <p className="text-sm text-gray-500 mt-2">Creating chat...</p>}
+            {isCreating && <p className="text-sm text-gray-500 mt-2">Створення чату...</p>}
         </div>
     );
 };
@@ -142,11 +142,11 @@ const GroupChatCreator = ({ onClose }: { onClose: () => void }) => {
 
     const handleCreateGroupChat = async () => {
         if (!groupName.trim()) {
-            setError('Group name is required.');
+            setError('Назва групи обов\'язкова.');
             return;
         }
         if (selectedMembers.length === 0) {
-            setError('You must add at least one member.');
+            setError('Ви повинні додати щонайменше одного члена.');
             return;
         }
         
@@ -162,7 +162,7 @@ const GroupChatCreator = ({ onClose }: { onClose: () => void }) => {
             // The websocket notification will handle adding the chat to the list
             onClose();
         } catch (err) {
-            setError('Failed to create group chat.');
+            setError('Помилка при створенні групового чату.');
             console.error(err);
         } finally {
             setIsCreating(false);
@@ -173,19 +173,19 @@ const GroupChatCreator = ({ onClose }: { onClose: () => void }) => {
         <div className="space-y-4">
             <input
                 type="text"
-                placeholder="Enter group name..."
+                placeholder="Введіть назву групи..."
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
                 className="w-full p-2 border rounded"
                 disabled={isCreating}
             />
             <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-2">Add Members</h3>
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">Додати членів</h3>
                 <UserSearchInput onSelectUser={handleSelectUser} />
             </div>
             {selectedMembers.length > 0 && (
                 <div className="border rounded-lg p-2 space-y-2">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase">Members</h4>
+                    <h4 className="text-xs font-bold text-gray-500 uppercase">Члени</h4>
                     {selectedMembers.map(member => (
                         <div key={member.username} className="flex items-center justify-between bg-gray-100 p-1 rounded">
                             <span className="text-sm">{member.username}</span>
@@ -202,7 +202,7 @@ const GroupChatCreator = ({ onClose }: { onClose: () => void }) => {
                 className="w-full bg-primary text-white p-2 rounded-lg font-semibold hover:bg-primary-dark disabled:bg-gray-400"
                 disabled={isCreating}
             >
-                {isCreating ? 'Creating...' : 'Create Group'}
+                {isCreating ? 'Створення...' : 'Створити групу'}
             </button>
         </div>
     );
@@ -215,7 +215,7 @@ export default function CreateChatModal({ isOpen, mode, onClose }: CreateChatMod
     return null;
   }
 
-  const title = mode === 'private' ? 'New Message' : 'Create Group Chat';
+  const title = mode === 'private' ? 'Нове повідомлення' : 'Створити груповий чат';
 
   return (
     <div 

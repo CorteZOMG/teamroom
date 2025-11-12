@@ -25,7 +25,7 @@ export default function PinnedMessages() {
             setPinnedMessages(messages);
             setError(null);
         } catch (err) {
-            setError('Failed to load pinned messages');
+            setError('Помилка при завантаженні закріплених повідомлень');
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -54,7 +54,7 @@ export default function PinnedMessages() {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="p-2.5 rounded-full hover:bg-gray-100 transition-colors relative"
-                title="Pinned messages"
+                title="Закріплені повідомлення"
             >
                 <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -82,7 +82,7 @@ export default function PinnedMessages() {
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                 </svg>
-                                Pinned Messages
+                                Закріплені повідомлення
                             </h4>
                             <div className="flex items-center gap-2">
                                 {pinnedMessages.length > 0 && (
@@ -114,14 +114,14 @@ export default function PinnedMessages() {
                                 <div className="flex items-center justify-center py-12">
                                     <div className="text-center">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                                        <p className="text-gray-500 text-sm">Loading pinned messages...</p>
+                                        <p className="text-gray-500 text-sm">Завантаження закріплених повідомлень...</p>
                                     </div>
                                 </div>
                             ) : pinnedMessages.length === 0 ? (
                                 <div className="flex items-center justify-center py-12">
                                     <div className="text-center text-gray-400">
                                         <div className="text-3xl mb-2">📌</div>
-                                        <p className="text-sm">No pinned messages yet</p>
+                                        <p className="text-sm">Немає закріплених повідомлень</p>
                                     </div>
                                 </div>
                             ) : (
@@ -155,16 +155,16 @@ export default function PinnedMessages() {
                                                     <button
                                                         onClick={() => handleUnpinMessage(msg.messageId)}
                                                         className="text-xs text-red-500 hover:text-red-700 bg-red-100 hover:bg-red-200 px-2.5 py-1 rounded-md transition-colors font-medium opacity-0 group-hover:opacity-100 flex-shrink-0"
-                                                        title="Unpin message"
+                                                        title="Відкріпити повідомлення"
                                                     >
-                                                        Unpin
+                                                        Відкріпити
                                                     </button>
                                                 </div>
                                                 {msg.isDeleted && (
-                                                    <p className="text-sm text-gray-500 italic mb-2">(This message was deleted)</p>
+                                                    <p className="text-sm text-gray-500 italic mb-2">(Це повідомлення було видалено)</p>
                                                 )}
                                                 <p className="text-sm text-gray-700 break-words leading-relaxed mb-2">
-                                                    {msg.messageContent || '(No content)'}
+                                                    {msg.messageContent || '(Немає вмісту)'}
                                                 </p>
                                                 <p className="text-xs text-gray-500 font-medium">
                                                     {formattedDate}
