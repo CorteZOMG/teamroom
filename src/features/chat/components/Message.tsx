@@ -8,6 +8,10 @@ import webSocketService from '../../../services/websocket';
 import * as chatApi from '../../../api/chat';
 import { getProfileByUsername } from '../../../api/client';
 
+interface ConferenceContent {
+  conferenceSubject: string;
+}
+
 // ... (SystemMessage and ReactionsDisplay components remain the same)
 
 const SystemMessage = ({ message }: { message: ChatMessage }) => {
@@ -103,6 +107,20 @@ const SystemMessage = ({ message }: { message: ChatMessage }) => {
                 bgColor = 'bg-red-50';
                 textColor = 'text-red-700';
                 borderColor = 'border-red-200';
+                break;
+            case 'CONFERENCE_STARTED':
+                content = `Conference started: ${(parsedContent as ConferenceContent).conferenceSubject}`;
+                icon = '🎥';
+                bgColor = 'bg-green-50';
+                textColor = 'text-green-700';
+                borderColor = 'border-green-200';
+                break;
+            case 'CONFERENCE_ENDED':
+                content = `Conference ended: ${(parsedContent as ConferenceContent).conferenceSubject}`;
+                icon = '📹';
+                bgColor = 'bg-gray-50';
+                textColor = 'text-gray-700';
+                borderColor = 'border-gray-200';
                 break;
             default:
                 break;

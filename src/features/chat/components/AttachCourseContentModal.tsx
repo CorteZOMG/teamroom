@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import type { RelatedEntity, RelatedEntityType, AssignmentDTO, MaterialDTO } from '../../../types';
+import type { RelatedEntity, RelatedEntityType, AssignmentDTO, MaterialDTO, Conference } from '../../../types';
 import { getCourseAssignments, getCourseMaterials } from '../../../api/courses';
+import { getConferences } from '../../../api/conferences';
 
 interface AttachCourseContentModalProps {
   isOpen: boolean;
@@ -15,9 +16,10 @@ export default function AttachCourseContentModal({
   onClose,
   onAttach,
 }: AttachCourseContentModalProps) {
-  const [activeTab, setActiveTab] = useState<'ASSIGNMENT' | 'MATERIAL'>('ASSIGNMENT');
+  const [activeTab, setActiveTab] = useState<'ASSIGNMENT' | 'MATERIAL' | 'CONFERENCE'>('ASSIGNMENT');
   const [assignments, setAssignments] = useState<AssignmentDTO[]>([]);
   const [materials, setMaterials] = useState<MaterialDTO[]>([]);
+  const [conferences, setConferences] = useState<Conference[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedEntities, setSelectedEntities] = useState<RelatedEntity[]>([]);
@@ -34,14 +36,16 @@ export default function AttachCourseContentModal({
     setLoading(true);
     setError(null);
     try {
-      const [assignmentsRes, materialsRes] = await Promise.all([
+      const [assignmentsRes, materialsRes, conferencesRes] = await Promise.all([
         getCourseAssignments(courseId),
         getCourseMaterials(courseId),
+        getConferences(courseId),
       ]);
       const assignmentsData = assignmentsRes.assignments;
       const materialsData = materialsRes.materials;
       setAssignments(assignmentsData);
       setMaterials(materialsData);
+      setConferences(conferencesRes);
     } catch (err) {
       setError('Failed to load course content');
       console.error(err);
@@ -114,6 +118,16 @@ export default function AttachCourseContentModal({
           >
             Materials
           </button>
+          <button
+            onClick={() => setActiveTab('CONFERENCE')}
+            className={`flex-1 py-3 font-montserrat transition-colors ${
+              activeTab === 'CONFERENCE'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Conferences
+          </button>
         </div>
 
         {/* Content */}
@@ -147,7 +161,7 @@ export default function AttachCourseContentModal({
                 ))
               )}
             </div>
-          ) : (
+          ) : activeTab === 'MATERIAL' ? (
             <div className="space-y-2">
               {materials.length === 0 ? (
                 <p className="text-gray-500">No materials available</p>
@@ -168,6 +182,34 @@ export default function AttachCourseContentModal({
                     <span className="ml-3 flex-1 font-montserrat">
                       {material.topic}
                     </span>
+                  </label>
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {conferences.length === 0 ? (
+                <p className="text-gray-500">No conferences available</p>
+              ) : (
+                conferences.map((conference) => (
+                  <label
+                    key={conference.id}
+                    className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedEntities.some(
+                        (e) => e.relatedEntityType === 'CONFERENCE' && e.relatedEntityId === conference.id
+                      )}
+                      onChange={() => toggleEntity('CONFERENCE', conference.id)}
+                      className="w-4 h-4 text-primary rounded cursor-pointer"
+                    />
+                    <div className="ml-3 flex-1 font-montserrat">
+                      <p>{conference.subject}</p>
+                      <p className="text-xs text-gray-500">
+                        {conference.status === 'ACTIVE' ? '🟢 Active' : '🔴 Ended'}
+                      </p>
+                    </div>
                   </label>
                 ))
               )}
