@@ -61,7 +61,7 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
   const handleJoinConference = async (conf: Conference) => {
     try {
        setActionError(null);
-       const { jwt, roomName, subject, role } = await joinConference(courseId, conf.id);
+       const { jwt, roomName, role } = await joinConference(courseId, conf.id);
        
        let waitMs = 1500;
        try {
@@ -75,7 +75,7 @@ export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps
        }
        
        setTimeout(() => {
-         setJitsiConfig({ jwt, roomName, subject, role });
+         setJitsiConfig({ jwt, roomName, subject: conf.subject, role });
        }, waitMs);
        } catch (err) {
        setActionError('Не вдалося приєднатися до конференції.');
