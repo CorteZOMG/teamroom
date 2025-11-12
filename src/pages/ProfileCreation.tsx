@@ -314,9 +314,11 @@ export default function ProfileCreation() {
             {/* Back Button - Top Left Corner - Responsive */}
             <button
                 onClick={handleCancel}
-                className="fixed top-2 left-2 sm:top-3 sm:left-3 lg:top-4 lg:left-4 w-9 h-9 sm:w-10 sm:h-10 lg:w-14 lg:h-14 flex items-center justify-center cursor-pointer bg-white/20 hover:bg-white/30 rounded-full transition-colors duration-200 z-[9999] backdrop-blur-sm shadow-lg border border-white/30"
+                className="fixed top-2 left-2 sm:top-3 sm:left-3 lg:top-4 lg:left-4 w-9 h-9 sm:w-10 sm:h-10 lg:w-14 lg:h-14 flex items-center justify-center cursor-pointer bg-primary hover:bg-secondary rounded-full transition-colors duration-200 z-[9999] shadow-lg"
             >
-                <img src="/assets/arrow.svg" alt="Назад" className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-6 lg:h-6" />
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 12H5m7 7l-7-7 7-7" />
+                </svg>
             </button>
 
             {/* Mobile/Tablet Card Background - ONLY show below lg breakpoint */}

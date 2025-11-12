@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { CloudImage } from './CloudImage';
+import { getUsernameFromToken } from '../services/auth';
 import type { Course } from '../types';
 
 interface CourseCardProps {
@@ -8,8 +9,10 @@ interface CourseCardProps {
 
 export default function CourseCard({ course }: CourseCardProps) {
   const navigate = useNavigate();
+  const currentUsername = getUsernameFromToken();
 
-  const userRole = course.members[0]?.role || 'STUDENT';
+  const currentUserMember = course.members.find(m => m.username === currentUsername);
+  const userRole = currentUserMember?.role || 'STUDENT';
   const ownerMember = course.members.find(m => m.role === 'OWNER');
   const ownerName = ownerMember?.username || 'Викладач';
 
@@ -21,8 +24,8 @@ export default function CourseCard({ course }: CourseCardProps) {
     <div
       onClick={handleClick}
       className="w-full max-w-[300px] h-[280px] rounded-[10px] p-4 cursor-pointer font-montserrat 
-                 bg-gradient-to-br from-primary to-secondary 
-                 transition-all duration-300 hover:shadow-xl hover:from-secondary hover:to-primary
+                 bg-primary
+                 transition-all duration-300 hover:shadow-xl hover:scale-105 hover:-translate-y-2
                  flex flex-col overflow-hidden"
     >
       {/* Header */}

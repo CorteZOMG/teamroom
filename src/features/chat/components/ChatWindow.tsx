@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useChat } from '../context/ChatContext';
 import { useAuth } from '../../../context/AuthContext';
+import { AuroraBackground } from '../../../components/ui/aurora-background';
 import * as chatApi from '../../../api/chat';
 import webSocketService from '../../../services/websocket';
 import ChatHeader from './ChatHeader';
@@ -147,9 +148,9 @@ export default function ChatWindow() {
 
     if (!selectedChat) {
         return (
-            <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-                <div className="text-center">
-                    <div className="text-6xl mb-4 animate-bounce">💬</div>
+            <AuroraBackground className="flex-1 flex items-center justify-center overflow-hidden">
+                <div className="text-center relative z-10">
+                    <div className="text-6xl mb-4">💬</div>
                     <h2 className="text-2xl font-bold mb-2 font-montserrat text-gray-800">
                         Виберіть чат
                     </h2>
@@ -157,7 +158,7 @@ export default function ChatWindow() {
                         Виберіть чат зі списку, щоб розпочати спілкування.
                     </p>
                 </div>
-            </div>
+            </AuroraBackground>
         );
     }
 

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import * as chatApi from '../../../api/chat';
 import { getThumbnailLink } from '../../../api/cloudStorage';
 import ChatSettings from './ChatSettings';
-import PinnedMessages from './PinnedMessages';
 
 export default function ChatHeader() {
     const { selectedChat } = useChat();
@@ -75,7 +74,6 @@ export default function ChatHeader() {
 
                 {/* Action Buttons */}
                 <div className="flex items-center space-x-2">
-                    <PinnedMessages />
                     <ChatSettings />
                 </div>
             </div>

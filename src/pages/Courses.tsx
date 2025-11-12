@@ -3,8 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import CourseCard from '../components/CourseCard';
 import { ImageUpload } from '../components/ImageUpload';
-import { getUserCourses, createCourse, addCourseMember } from '../api/courses';
-import { getUsernameFromToken } from '../services/auth';
+import { AuroraBackground } from '../components/ui/aurora-background';
+import { getUserCourses, createCourse, getCourse } from '../api/courses';
 import { generateUniqueCoursePhotoName } from '../api/cloudStorage';
 import type { Course, CreateCourseRequest } from '../types';
 
@@ -14,8 +14,6 @@ export default function Courses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showJoinModal, setShowJoinModal] = useState(false);
-  const [joinCourseId, setJoinCourseId] = useState('');
   const [createLoading, setCreateLoading] = useState(false);
   const [newCourse, setNewCourse] = useState<CreateCourseRequest>({
     name: '',
@@ -33,7 +31,20 @@ export default function Courses() {
       setLoading(true);
       setError(null);
       const response = await getUserCourses();
-      setCourses(response.courses);
+      
+      // Fetch full course data with members for each course
+      const coursesWithMembers = await Promise.all(
+        response.courses.map(async (course) => {
+          try {
+            return await getCourse(course.id);
+          } catch (err) {
+            console.error(`Error loading course ${course.id}:`, err);
+            return course;
+          }
+        })
+      );
+      
+      setCourses(coursesWithMembers);
     } catch (err) {
       console.error('Error loading courses:', err);
       setError('Не вдалося завантажити курси');
@@ -75,29 +86,7 @@ export default function Courses() {
     }
   };
 
-  const handleJoinCourse = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!joinCourseId.trim()) {
-      setError('ID курсу є обов\'язковим');
-      return;
-    }
 
-    try {
-      const username = getUsernameFromToken();
-      if (!username) {
-        setError('Не вдалося отримати ім\'я користувача');
-        return;
-      }
-
-      await addCourseMember(parseInt(joinCourseId), { username, role: 'STUDENT' });
-      setJoinCourseId('');
-      setShowJoinModal(false);
-      await loadCourses();
-    } catch (err) {
-      console.error('Error joining course:', err);
-      setError(err instanceof Error ? err.message : 'Не вдалося приєднатися до курсу');
-    }
-  };
 
   if (authLoading || loading) {
     return (
@@ -121,7 +110,8 @@ export default function Courses() {
 
   return (
     <Layout>
-      <div className="w-full h-full bg-gray-50 p-4 sm:p-8 overflow-y-auto">
+      <AuroraBackground className="w-full h-full p-4 sm:p-8 overflow-y-auto !items-start !justify-start">
+        <div className="relative z-10 w-full">
         {/* Header */}
         <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-normal font-montserrat text-primary mb-4 xs:mb-0">
@@ -129,15 +119,8 @@ export default function Courses() {
           </h1>
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <button
-              onClick={() => setShowJoinModal(true)}
-              className="px-6 py-3 bg-primary hover:bg-secondary text-white rounded-[10px] font-montserrat text-lg transition-colors duration-200"
-              disabled
-            >
-              Приєднатися до курсу
-            </button>
-            <button
               onClick={() => setShowCreateModal(true)}
-              className="px-6 py-3 bg-accent hover:bg-secondary text-white rounded-[10px] font-montserrat text-lg transition-colors duration-200"
+              className="px-6 py-3 bg-primary hover:bg-secondary text-white rounded-[10px] font-montserrat text-lg transition-colors duration-200"
             >
               Створити курс
             </button>
@@ -146,24 +129,26 @@ export default function Courses() {
 
         {/* Error message */}
         {error && (
-          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-[10px] font-montserrat">
+          <div className="relative z-20 mb-4 p-4 bg-red-100 text-red-700 rounded-[10px] font-montserrat">
             {error}
           </div>
         )}
 
         {/* Courses grid */}
         {courses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64">
-            <p className="text-gray-500 text-xl font-montserrat mb-4">
-              У вас ще немає курсів
-            </p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-6 py-3 bg-primary hover:bg-secondary text-white rounded-[10px] font-montserrat transition-colors duration-200"
-            >
-              Створити курс
-            </button>
-          </div>
+          <AuroraBackground className="relative rounded-[10px] overflow-hidden">
+            <div className="flex flex-col items-center justify-center h-64 relative z-10">
+              <p className="text-gray-600 text-xl font-montserrat mb-4">
+                У вас ще немає курсів
+              </p>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="px-6 py-3 bg-primary hover:bg-secondary text-white rounded-[10px] font-montserrat transition-colors duration-200"
+              >
+                Створити курс
+              </button>
+            </div>
+          </AuroraBackground>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {courses.map((course) => (
@@ -241,54 +226,9 @@ export default function Courses() {
           </div>
         )}
 
-        {/* Join Course Modal */}
-        {showJoinModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-[10px] p-8 max-w-md w-full">
-              <h2 className="text-primary text-2xl font-normal font-montserrat mb-6">
-                Приєднатися до курсу
-              </h2>
-              
-              <form onSubmit={handleJoinCourse}>
-                <div className="mb-4">
-                  <label className="block text-primary text-lg font-montserrat mb-2">
-                    ID курсу *
-                  </label>
-                  <input
-                    type="text"
-                    value={joinCourseId}
-                    onChange={(e) => setJoinCourseId(e.target.value)}
-                    placeholder="Введіть ID курсу"
-                    required
-                    className="w-full h-14 px-4 bg-gray-50 rounded-[10px] border-2 border-gray-200 focus:border-primary outline-none text-primary text-lg font-montserrat transition-colors duration-200"
-                  />
-                </div>
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowJoinModal(false);
-                      setJoinCourseId('');
-                      setError(null);
-                    }}
-                    className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-primary rounded-[10px] font-montserrat text-lg transition-colors duration-200"
-                  >
-                    Скасувати
-                  </button>
-                  
-                  <button
-                    type="submit"
-                    className="flex-1 px-6 py-3 bg-accent hover:bg-secondary text-white rounded-[10px] font-montserrat text-lg transition-colors duration-200"
-                  >
-                    Приєднатися
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      </AuroraBackground>
     </Layout>
   );
 }

@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { MessageCircle, BookOpen, User, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface SidebarProps {
@@ -15,13 +16,13 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     {
       id: 'messenger',
       label: 'Повідомлення',
-      icon: '💬',
+      icon: MessageCircle,
       path: '/messenger'
     },
     {
       id: 'courses',
       label: 'Курси',
-      icon: '📚',
+      icon: BookOpen,
       path: '/courses'
     }
   ];
@@ -62,25 +63,30 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="p-4 space-y-2" data-testid="sidebar-menu">
-          {menuItems.map((item) => (
-            <button
-              key={`menu-${item.id}`}
-              onClick={() => {
-                navigate(item.path);
-                onToggle();
-              }}
-              className={`
-                w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200
-                ${location.pathname === item.path || location.pathname.startsWith(item.path + '/')
-                  ? 'bg-white/20 text-white' 
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
-                }
-              `}
-            >
-              <span className="text-2xl">{item.icon}</span>
-              <span className="font-medium font-montserrat">{item.label}</span>
-            </button>
-          ))}
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={`menu-${item.id}`}
+                onClick={() => {
+                  navigate(item.path);
+                  onToggle();
+                }}
+                className={`
+                  w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200
+                  ${location.pathname === item.path || location.pathname.startsWith(item.path + '/')
+                    ? 'bg-white/20 text-white' 
+                    : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  }
+                `}
+              >
+                <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-transparent">
+                  <Icon size={20} />
+                </div>
+                <span className="font-medium font-montserrat">{item.label}</span>
+              </button>
+            );
+          })}
         </nav>
 
         {/* User section */}
@@ -98,14 +104,18 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
               }
             `}
           >
-            <span className="text-xl">👤</span>
+            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-transparent">
+              <User size={20} />
+            </div>
             <span className="font-medium font-montserrat">Профіль</span>
           </button>
           <button
             onClick={handleLogout}
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 hover:text-white transition-colors duration-200"
           >
-            <span className="text-xl">🚪</span>
+            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-transparent">
+              <LogOut size={20} />
+            </div>
             <span className="font-medium font-montserrat">Вийти</span>
           </button>
         </div>
