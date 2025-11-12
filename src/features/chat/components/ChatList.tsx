@@ -59,7 +59,7 @@ export default function ChatList() {
                 <p className="font-montserrat">No chats yet. Start a new conversation!</p>
               </div>
             ) : (
-              chats.filter(chat => chat && typeof chat.id !== 'undefined').map((chat) => (
+              chats.filter(chat => chat && typeof chat.id !== 'undefined' && chat.type !== 'COURSE_CHAT' && chat.type !== 'MAIN_COURSE_CHAT').map((chat) => (
                 <div
                   key={chat.id}
                   onClick={() => setSelectedChat(chat)}

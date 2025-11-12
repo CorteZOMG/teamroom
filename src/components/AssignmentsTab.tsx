@@ -10,16 +10,17 @@ interface AssignmentsTabProps {
   courseId: number;
   isOpen: boolean;
   userRole?: string;
+  focusId?: number | null;
 }
 
-export default function AssignmentsTab({ courseId, isOpen, userRole }: AssignmentsTabProps) {
+export default function AssignmentsTab({ courseId, isOpen, userRole, focusId }: AssignmentsTabProps) {
   const [assignments, setAssignments] = useState<AssignmentDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showResponseModal, setShowResponseModal] = useState(false);
-  const [selectedAssignment, setSelectedAssignment] = useState<AssignmentDTO | null>(null);
+  const [selectedAssignment, setSelectedAssignment] = useState<AssignmentDTO | null>(focusId ? { id: focusId } as AssignmentDTO : null);
   const [createLoading, setCreateLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [userResponses, setUserResponses] = useState<Map<number, AssignmentResponseDTO | null>>(new Map());

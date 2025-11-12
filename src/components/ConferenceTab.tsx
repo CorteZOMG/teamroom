@@ -7,6 +7,7 @@ import type { Conference, ConferenceRole } from '../types';
 interface ConferenceTabProps {
   courseId: number;
   userRole?: string;
+  focusId?: number | null;
 }
 
 interface JitsiConfig {
@@ -16,7 +17,7 @@ interface JitsiConfig {
   role: ConferenceRole;
 }
 
-export default function ConferenceTab({ courseId, userRole }: ConferenceTabProps) {
+export default function ConferenceTab({ courseId, userRole, focusId: _focusId }: ConferenceTabProps) {
   const { conferences, loading, error, refreshConferences } = useConferences();
   const [jitsiConfig, setJitsiConfig] = useState<JitsiConfig | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);

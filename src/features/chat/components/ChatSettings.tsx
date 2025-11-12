@@ -28,7 +28,8 @@ export default function ChatSettings() {
 
     const isOwner = selectedChat.role === 'OWNER';
     const isAdmin = selectedChat.role === 'ADMIN' || isOwner;
-    const isGroupChat = selectedChat.type === 'GROUP' || selectedChat.type === 'COURSE_CHAT';
+    const isGroupChat = selectedChat.type === 'GROUP' || selectedChat.type === 'COURSE_CHAT' || selectedChat.type === 'MAIN_COURSE_CHAT';
+    const isCourseChat = selectedChat.courseId !== null && selectedChat.courseId !== undefined;
     
     console.log('ChatSettings Debug:', {
         chatId: selectedChat.id,
@@ -146,8 +147,16 @@ export default function ChatSettings() {
                                 </div>
                             )}
 
+                            {/* Course Chat Notice */}
+                            {isCourseChat && (
+                                <div className="p-4 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm">
+                                    <p className="font-medium">Course Chat</p>
+                                    <p className="mt-1">This chat is managed by the course. Members and settings are controlled through course enrollment.</p>
+                                </div>
+                            )}
+
                             {/* Edit Chat Info */}
-                            {isAdmin && isGroupChat && (
+                            {isAdmin && isGroupChat && !isCourseChat && (
                                 <div className="space-y-3">
                                     <h4 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -213,12 +222,12 @@ export default function ChatSettings() {
                             )}
 
                             {/* Divider */}
-                            {isOwner && (
+                            {isOwner && !isCourseChat && (
                                 <div className="border-t border-gray-200"></div>
                             )}
 
                             {/* Delete Chat */}
-                            {isOwner && (
+                            {isOwner && !isCourseChat && (
                                 <div className="space-y-3">
                                     <h4 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -12,44 +12,97 @@ import { getProfileByUsername } from '../../../api/client';
 
 const SystemMessage = ({ message }: { message: ChatMessage }) => {
     let content = message.content || '';
+    let icon = '';
+    let bgColor = 'bg-blue-50';
+    let textColor = 'text-blue-700';
+    let borderColor = 'border-blue-200';
+
     try {
         const parsedContent = JSON.parse(content);
         switch (message.type) {
             case 'USER_JOINED_TO_CHAT':
                 content = `${(parsedContent as UserJoinedLeftContent).username} joined the chat`;
+                icon = '👋';
+                bgColor = 'bg-green-50';
+                textColor = 'text-green-700';
+                borderColor = 'border-green-200';
                 break;
             case 'USER_LEFT_FROM_CHAT':
                 content = `${(parsedContent as UserJoinedLeftContent).username} left the chat`;
+                icon = '👋';
+                bgColor = 'bg-yellow-50';
+                textColor = 'text-yellow-700';
+                borderColor = 'border-yellow-200';
                 break;
             case 'COURSE_OPENED':
                 content = 'The course has been opened';
+                icon = '🎓';
+                bgColor = 'bg-green-50';
+                textColor = 'text-green-700';
+                borderColor = 'border-green-200';
                 break;
             case 'COURSE_CLOSED':
                 content = 'The course has been closed';
+                icon = '🔒';
+                bgColor = 'bg-red-50';
+                textColor = 'text-red-700';
+                borderColor = 'border-red-200';
                 break;
             case 'MATERIAL_CREATED':
                 content = `New material created: ${(parsedContent as MaterialContent).materialTopic}`;
+                icon = '📚';
+                bgColor = 'bg-blue-50';
+                textColor = 'text-blue-700';
+                borderColor = 'border-blue-200';
                 break;
             case 'MATERIAL_UPDATED':
                 content = `Material updated: ${(parsedContent as MaterialContent).materialTopic}`;
+                icon = '✏️';
+                bgColor = 'bg-blue-50';
+                textColor = 'text-blue-700';
+                borderColor = 'border-blue-200';
                 break;
             case 'MATERIAL_DELETED':
                 content = `Material deleted: ${(parsedContent as MaterialContent).materialTopic}`;
+                icon = '🗑️';
+                bgColor = 'bg-red-50';
+                textColor = 'text-red-700';
+                borderColor = 'border-red-200';
                 break;
             case 'ASSIGNMENT_CREATED':
                 content = `New assignment: ${(parsedContent as AssignmentContent).assignmentTitle}`;
+                icon = '📝';
+                bgColor = 'bg-purple-50';
+                textColor = 'text-purple-700';
+                borderColor = 'border-purple-200';
                 break;
             case 'ASSIGNMENT_UPDATED':
                 content = `Assignment updated: ${(parsedContent as AssignmentContent).assignmentTitle}`;
+                icon = '✏️';
+                bgColor = 'bg-purple-50';
+                textColor = 'text-purple-700';
+                borderColor = 'border-purple-200';
                 break;
             case 'ASSIGNMENT_DELETED':
                 content = `Assignment deleted: ${(parsedContent as AssignmentContent).assignmentTitle}`;
+                icon = '🗑️';
+                bgColor = 'bg-red-50';
+                textColor = 'text-red-700';
+                borderColor = 'border-red-200';
                 break;
             case 'ASSIGNMENT_DEADLINE_IN_24HR':
                 content = `Assignment deadline in 24 hours: ${(parsedContent as AssignmentContent).assignmentTitle}`;
+                icon = '⏰';
+                bgColor = 'bg-orange-50';
+                textColor = 'text-orange-700';
+                borderColor = 'border-orange-200';
                 break;
             case 'ASSIGNMENT_DEADLINE_ENDED':
                 content = `Assignment deadline has ended: ${(parsedContent as AssignmentContent).assignmentTitle}`;
+                icon = '⏱️';
+                bgColor = 'bg-red-50';
+                textColor = 'text-red-700';
+                borderColor = 'border-red-200';
                 break;
             default:
                 break;
@@ -59,9 +112,10 @@ const SystemMessage = ({ message }: { message: ChatMessage }) => {
     }
 
     return (
-        <div className="flex justify-center">
-            <div className="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm font-montserrat my-2">
-                {content}
+        <div className="flex justify-center my-4">
+            <div className={`${bgColor} ${textColor} border ${borderColor} px-6 py-3 rounded-lg text-sm font-montserrat flex items-center gap-3 max-w-md`}>
+                {icon && <span className="text-lg flex-shrink-0">{icon}</span>}
+                <span>{content}</span>
             </div>
         </div>
     );

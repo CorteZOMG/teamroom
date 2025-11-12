@@ -7,15 +7,16 @@ interface MaterialsTabProps {
   courseId: number;
   isOpen: boolean;
   userRole?: string;
+  focusId?: number | null;
 }
 
-export default function MaterialsTab({ courseId, isOpen, userRole }: MaterialsTabProps) {
+export default function MaterialsTab({ courseId, isOpen, userRole, focusId }: MaterialsTabProps) {
   const [materials, setMaterials] = useState<MaterialDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
-  const [expandedMaterial, setExpandedMaterial] = useState<number | null>(null);
+  const [expandedMaterial, setExpandedMaterial] = useState<number | null>(focusId || null);
   
   const [newMaterial, setNewMaterial] = useState<CreateMaterialRequest>({
     topic: '',

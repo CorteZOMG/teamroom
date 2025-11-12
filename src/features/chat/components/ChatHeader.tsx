@@ -23,7 +23,7 @@ export default function ChatHeader() {
     }
 
     const memberCount = selectedChat.type === 'PRIVATE' ? 2 : members.length;
-    const isGroupChat = selectedChat.type === 'GROUP' || selectedChat.type === 'COURSE_CHAT';
+    const isGroupChat = selectedChat.type === 'GROUP' || selectedChat.type === 'COURSE_CHAT' || selectedChat.type === 'MAIN_COURSE_CHAT';
 
     return (
         <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">

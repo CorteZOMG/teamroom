@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
+import FeedTab from '../components/FeedTab';
 import MaterialsTab from '../components/MaterialsTab';
 import AssignmentsTab from '../components/AssignmentsTab';
 import ConferenceTab from '../components/ConferenceTab';
 import GradesJournalTab from '../components/GradesJournalTab';
+import CourseChatsTab from '../components/CourseChatsTab';
 import { CloudImage } from '../components/CloudImage';
 import { getCourse, changeMemberRole, deleteMember, deleteCourse, addCourseMember } from '../api/courses';
 import { getUsernameFromToken } from '../services/auth';
@@ -19,11 +21,13 @@ type CourseMemberRole = 'OWNER' | 'PROFESSOR' | 'LEADER' | 'STUDENT' | 'VIEWER';
 export default function CourseDetail() {
     const { courseId } = useParams<{ courseId: string }>();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { isAuthenticated, loading: authLoading } = useAuth();
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<TabType>('materials');
+    const [focusId, setFocusId] = useState<number | null>(null);
     const [showCourseId, setShowCourseId] = useState(false);
     const [showAddMemberModal, setShowAddMemberModal] = useState(false);
     const [newMemberUsername, setNewMemberUsername] = useState('');
@@ -53,6 +57,20 @@ export default function CourseDetail() {
             loadCourse();
         }
     }, [isAuthenticated, authLoading, loadCourse]);
+
+    // Handle query parameters for navigation from chat
+    useEffect(() => {
+        const tabParam = searchParams.get('tab');
+        const focusParam = searchParams.get('focusId');
+        
+        if (tabParam && ['feed', 'materials', 'assignments', 'conference', 'chats', 'members', 'grades'].includes(tabParam)) {
+            setActiveTab(tabParam as TabType);
+        }
+        
+        if (focusParam) {
+            setFocusId(parseInt(focusParam));
+        }
+    }, [searchParams]);
 
     const handleChangeRole = async (username: string) => {
         const newRole = prompt('Enter new role (OWNER, PROFESSOR, LEADER, STUDENT, VIEWER):');
@@ -266,31 +284,25 @@ export default function CourseDetail() {
                 {/* Tab Content */}
                 <div className="flex-1 overflow-y-auto p-4 sm:p-8">
                     {activeTab === 'feed' && (
-                        <div className="text-center text-gray-500 font-montserrat">
-                            <p className="text-xl">Стрічка курсу</p>
-                            <p className="mt-2">В розробці...</p>
-                        </div>
+                        <FeedTab courseId={course.id} />
                     )}
 
                     {activeTab === 'materials' && (
-                        <MaterialsTab courseId={course.id} isOpen={course.isOpen} userRole={userRole} />
+                        <MaterialsTab courseId={course.id} isOpen={course.isOpen} userRole={userRole} focusId={focusId} />
                     )}
 
                     {activeTab === 'assignments' && (
-                        <AssignmentsTab courseId={course.id} isOpen={course.isOpen} userRole={userRole} />
+                        <AssignmentsTab courseId={course.id} isOpen={course.isOpen} userRole={userRole} focusId={focusId} />
                     )}
 
                     {activeTab === 'conference' && (
                         <ConferenceProvider courseId={course.id}>
-                            <ConferenceTab courseId={course.id} userRole={userRole} />
+                            <ConferenceTab courseId={course.id} userRole={userRole} focusId={focusId} />
                         </ConferenceProvider>
                     )}
 
                     {activeTab === 'chats' && (
-                        <div className="text-center text-gray-500 font-montserrat">
-                            <p className="text-xl">Чати курсу</p>
-                            <p className="mt-2">В розробці...</p>
-                        </div>
+                        <CourseChatsTab courseId={course.id} userRole={userRole} />
                     )}
 
                     {activeTab === 'grades' && (
