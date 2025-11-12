@@ -20,8 +20,12 @@ export type OnChatBroadcastCallback = (broadcast: ChatBroadcast) => void;
 class WebSocketService {
   private stompClient: Stomp.Client | null = null;
   private isConnectedFlag = false;
+  private isConnectingFlag = false;
   private userNotificationSubscription: Stomp.Subscription | null = null;
   private chatSubscriptions = new Map<number, Stomp.Subscription>();
+  private messageQueue: Array<{ destination: string; body?: object }> = [];
+  private maxRetries = 5;
+  private retryCount = 0;
 
   private initializeClient() {
     if (this.stompClient) {
@@ -57,8 +61,20 @@ class WebSocketService {
   }
 
   connect(onConnected: OnConnectedCallback, onError: OnErrorCallback) {
+    if (this.isConnectedFlag) {
+      onConnected();
+      return;
+    }
+
+    if (this.isConnectingFlag) {
+      return;
+    }
+
+    this.isConnectingFlag = true;
+
     const token = getToken();
     if (!token) {
+      this.isConnectingFlag = false;
       onError(new Error('No authentication token found'));
       return;
     }
@@ -74,13 +90,38 @@ class WebSocketService {
         headers,
         () => {
           this.isConnectedFlag = true;
+          this.isConnectingFlag = false;
+          this.retryCount = 0;
+          this.flushMessageQueue();
           onConnected();
         },
         (error: any) => {
           this.isConnectedFlag = false;
-          onError(new Error(error.body || 'WebSocket connection failed'));
+          this.isConnectingFlag = false;
+          
+          if (this.retryCount < this.maxRetries) {
+            this.retryCount++;
+            const delayMs = Math.min(1000 * Math.pow(2, this.retryCount - 1), 10000);
+            console.log(`WebSocket connection failed. Retrying in ${delayMs}ms (attempt ${this.retryCount}/${this.maxRetries})`);
+            
+            setTimeout(() => {
+              this.stompClient = null;
+              this.connect(onConnected, onError);
+            }, delayMs);
+          } else {
+            onError(new Error(error.body || 'WebSocket connection failed after maximum retries'));
+          }
         }
       );
+    }
+  }
+
+  private flushMessageQueue() {
+    while (this.messageQueue.length > 0) {
+      const { destination, body } = this.messageQueue.shift()!;
+      if (this.stompClient && this.isConnectedFlag) {
+        this.stompClient.send(destination, {}, body ? JSON.stringify(body) : undefined);
+      }
     }
   }
 
@@ -141,11 +182,15 @@ class WebSocketService {
   }
 
   private send(destination: string, body?: object) {
-    if (!this.stompClient || !this.isConnectedFlag) {
-        console.error('WebSocket not connected, cannot send message');
-        return;
+    if (this.isConnectedFlag && this.stompClient) {
+      this.stompClient.send(destination, {}, body ? JSON.stringify(body) : undefined);
+    } else if (this.isConnectingFlag) {
+      // Queue the message if we're still connecting
+      this.messageQueue.push({ destination, body });
+      console.log('WebSocket connecting, queuing message...');
+    } else {
+      console.error('WebSocket not connected, cannot send message');
     }
-    this.stompClient.send(destination, {}, body ? JSON.stringify(body) : undefined);
   }
 
   sendMessage(chatId: number, message: SendMessageRequest) {
