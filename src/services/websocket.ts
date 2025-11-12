@@ -27,6 +27,15 @@ class WebSocketService {
   private maxRetries = 5;
   private retryCount = 0;
 
+  constructor() {
+    // Disconnect on page unload
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', () => {
+        this.disconnect();
+      });
+    }
+  }
+
   private initializeClient() {
     if (this.stompClient) {
       return; 

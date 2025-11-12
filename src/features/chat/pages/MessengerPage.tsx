@@ -48,10 +48,10 @@ export default function MessengerPage() {
       );
     }
 
-    // Cleanup on unmount or when auth status changes
+    // Only disconnect if auth is lost, not on component unmount
     return () => {
-      if (webSocketService.isConnected()) {
-        console.log('Disconnecting WebSocket.');
+      if (!isAuthenticated && webSocketService.isConnected()) {
+        console.log('Disconnecting WebSocket due to authentication loss.');
         webSocketService.disconnect();
       }
     };
